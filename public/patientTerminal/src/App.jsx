@@ -79,11 +79,15 @@ function App() {
       fetch(envUrl)
         .then(res => res.json())
         .then(data => {
-          if (data && data.temperature_c !== null && data.temperature_c !== undefined) {
+          if (data && data.online === true && data.temperature_c !== null && data.temperature_c !== undefined) {
             setAmbientEnv(data);
+          } else {
+            setAmbientEnv(null);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          setAmbientEnv(null);
+        });
     };
 
     fetchEnv();
@@ -533,7 +537,7 @@ function App() {
         >
           ← Return to Portal
         </a>
-        {ambientEnv && ambientEnv.temperature_c !== null && (
+        {ambientEnv && ambientEnv.online === true && ambientEnv.temperature_c !== null && (
           <div
             className="kiosk-status"
             style={{

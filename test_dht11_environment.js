@@ -94,16 +94,16 @@ async function runTests() {
     process.exit(1);
   }
 
-  // Test 4: Offline fallback handling
-  console.log('\n--- Test 4: Sensor Offline Graceful Fallback ---');
+  // Test 4: Offline fallback handling - strictly null values (no hardcoded fake data)
+  console.log('\n--- Test 4: Sensor Offline Graceful Fallback (No Hardcoded Numbers) ---');
   patient.deviceIP = '127.0.0.1:19999'; // unreachable port
   const res4 = await fetch(`http://127.0.0.1:${testPort}/api/v1/patient/PT-HOME-01/environment`);
   const data4 = await res4.json();
   console.log('Offline Response:', data4);
-  if (data4.success && data4.online === false && data4.error) {
-    console.log('✅ Test 4 PASSED: Graceful offline handling without crashing');
+  if (data4.success && data4.online === false && data4.temperature_c === null && data4.humidity_pct === null) {
+    console.log('✅ Test 4 PASSED: Graceful offline handling with strictly null temperature and humidity (0 fake data)');
   } else {
-    console.error('❌ Test 4 FAILED');
+    console.error('❌ Test 4 FAILED: Hardcoded fake data was returned!', data4);
     process.exit(1);
   }
 

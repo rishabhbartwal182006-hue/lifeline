@@ -327,32 +327,50 @@ router.get('/:patientId/environment', async (req, res) => {
     const espRes = await axios.get(`http://${deviceIP}/environment`, { timeout: 2500 });
     const envData = espRes.data || {};
 
-    const tempC = (envData.temperature_c !== undefined && envData.temperature_c !== null)
-      ? Number(envData.temperature_c)
-      : 24.5;
-    const tempF = (envData.temperature_f !== undefined && envData.temperature_f !== null)
-      ? Number(envData.temperature_f)
-      : Number((tempC * 9 / 5 + 32).toFixed(1));
-    const hum = (envData.humidity_pct !== undefined && envData.humidity_pct !== null)
-      ? Number(envData.humidity_pct)
-      : 50.0;
+    const isSensorOnline = envData.sensor_online === true && envData.temperature_c !== null && envData.temperature_c !== undefined;
 
-    const result = {
-      success: true,
-      online: envData.sensor_online !== false,
-      temperature_c: tempC,
-      temperature_f: tempF,
-      humidity_pct: hum,
-      sensor_type: envData.sensor_type || 'DHT11',
-      gpio: envData.gpio || 13,
-      device_id: envData.device_id || 'LIFELINE-HOME-NODE-02',
-      timestamp: new Date().toISOString()
-    };
+    let result;
+    if (isSensorOnline) {
+      const tempC = Number(envData.temperature_c);
+      const tempF = (envData.temperature_f !== undefined && envData.temperature_f !== null)
+        ? Number(envData.temperature_f)
+        : Number((tempC * 9 / 5 + 32).toFixed(1));
+      const hum = Number(envData.humidity_pct);
 
-    if (patient) {
-      patient.environment = result;
-      patient.deviceStatus = 'Connected';
-      patient.lastSync = result.timestamp;
+      result = {
+        success: true,
+        online: true,
+        temperature_c: tempC,
+        temperature_f: tempF,
+        humidity_pct: hum,
+        sensor_type: 'DHT11',
+        gpio: 13,
+        device_id: 'LIFELINE-HOME-NODE-02',
+        timestamp: new Date().toISOString()
+      };
+
+      if (patient) {
+        patient.environment = result;
+        patient.deviceStatus = 'Connected';
+        patient.lastSync = result.timestamp;
+      }
+    } else {
+      result = {
+        success: true,
+        online: false,
+        temperature_c: null,
+        temperature_f: null,
+        humidity_pct: null,
+        sensor_type: 'DHT11',
+        gpio: 13,
+        device_id: 'LIFELINE-HOME-NODE-02',
+        status: 'Awaiting live sensor reading from DHT11 on GPIO 13',
+        timestamp: new Date().toISOString()
+      };
+
+      if (patient) {
+        patient.environment = result;
+      }
     }
 
     const io = req.app.get('io');
@@ -365,19 +383,22 @@ router.get('/:patientId/environment', async (req, res) => {
 
     return res.json(result);
   } catch (err) {
-    const cached = patient && patient.environment;
-    return res.json({
+    const result = {
       success: true,
       online: false,
-      temperature_c: cached ? cached.temperature_c : null,
-      temperature_f: cached ? cached.temperature_f : null,
-      humidity_pct: cached ? cached.humidity_pct : null,
+      temperature_c: null,
+      temperature_f: null,
+      humidity_pct: null,
       sensor_type: 'DHT11',
       gpio: 13,
       device_id: 'LIFELINE-HOME-NODE-02',
       error: 'Device unreachable at http://' + deviceIP + '/environment',
       timestamp: new Date().toISOString()
-    });
+    };
+    if (patient) {
+      patient.environment = result;
+    }
+    return res.json(result);
   }
 });
 

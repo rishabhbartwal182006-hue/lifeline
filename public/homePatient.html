@@ -868,7 +868,7 @@
         const liveBadge = document.getElementById('envLiveBadge');
         const lastSync = document.getElementById('envLastSync');
         
-        if (data.success && data.temperature_c !== null && data.temperature_c !== undefined) {
+        if (data.success && data.online && data.temperature_c !== null && data.temperature_c !== undefined) {
           const tC = Number(data.temperature_c);
           const tF = Number(data.temperature_f || (tC * 9/5 + 32));
           const h = Number(data.humidity_pct);
@@ -904,18 +904,33 @@
           }
 
           if (liveBadge) {
-            if (data.online) {
-              liveBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> DHT11 Live (GPIO 13)';
-              liveBadge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
-            } else {
-              liveBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Sensor Offline (Standby)';
-              liveBadge.className = 'bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
-            }
+            liveBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> DHT11 Live (GPIO 13)';
+            liveBadge.className = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
           }
 
           if (lastSync) {
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            lastSync.innerText = `Updated ${timeStr}`;
+            lastSync.innerText = `Live reading ${timeStr}`;
+          }
+        } else {
+          // Explicitly show offline state - strictly NO hardcoded numbers
+          if (tempVal) tempVal.innerText = '--';
+          if (tempFVal) tempFVal.innerText = '°C';
+          if (humVal) humVal.innerText = '--';
+          if (tempComfort) {
+            tempComfort.innerText = 'Awaiting DHT11';
+            tempComfort.className = 'text-[10px] text-slate-400 font-semibold';
+          }
+          if (humComfort) {
+            humComfort.innerText = 'Sensor Offline';
+            humComfort.className = 'text-[10px] text-slate-400 font-semibold';
+          }
+          if (liveBadge) {
+            liveBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Sensor Offline (Standby)';
+            liveBadge.className = 'bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1';
+          }
+          if (lastSync) {
+            lastSync.innerText = 'Connect DHT11 to GPIO 13';
           }
         }
       } catch (err) {
