@@ -37,10 +37,74 @@ function StatusBadge({ label, online }) {
 export default function VitalScanner({ sessionId, onScanSuccess }) {
   const [scannerOnline, setScannerOnline]   = useState(null);
   const [esp32Online,   setEsp32Online]     = useState(null);
+  const [doorStatus,    setDoorStatus]      = useState('closed'); // 'open' | 'closed' | 'moving' | 'offline'
+  const [countdown,     setCountdown]       = useState(null);     // seconds left to auto-close
   const [scanning,      setScanning]        = useState(false);
   const [result,        setResult]          = useState(null);   // last scan result
   const [error,         setError]           = useState(null);
   const [statusLoading, setStatusLoading]   = useState(true);
+
+  // Door Control Actions
+  const openDoor = useCallback(async () => {
+    try {
+      setDoorStatus('moving');
+      const res = await fetch(`${API_BASE}/api/v1/kiosk/door/open`, { method: 'POST' });
+      const data = await res.json();
+      if (data.online) setDoorStatus('open');
+      else setDoorStatus('offline');
+    } catch {
+      setDoorStatus('offline');
+    }
+  }, []);
+
+  const closeDoor = useCallback(async () => {
+    try {
+      setDoorStatus('moving');
+      const res = await fetch(`${API_BASE}/api/v1/kiosk/door/close`, { method: 'POST' });
+      const data = await res.json();
+      if (data.online) setDoorStatus('closed');
+      else setDoorStatus('offline');
+    } catch {
+      setDoorStatus('offline');
+    }
+  }, []);
+
+  // Poll door status along with camera status
+  const checkDoorStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/kiosk/door/status`);
+      const data = await res.json();
+      if (data.online) {
+        setDoorStatus(data.status || 'closed');
+      } else {
+        setDoorStatus('offline');
+      }
+    } catch {
+      setDoorStatus('offline');
+    }
+  }, []);
+
+  // Auto-open door when Vitals Scanner mounts
+  useEffect(() => {
+    openDoor();
+    return () => {
+      closeDoor(); // Seal door when moving away from scanner step
+    };
+  }, [openDoor, closeDoor]);
+
+  // Countdown timer for automatic door closure after device removal
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      closeDoor();
+      setCountdown(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, closeDoor]);
 
   // Poll status every 8 seconds (paused while scanning to avoid camera buffer collision)
   const checkStatus = useCallback(async () => {
@@ -60,9 +124,13 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
 
   useEffect(() => {
     checkStatus();
-    const timer = setInterval(checkStatus, 8000);
+    checkDoorStatus();
+    const timer = setInterval(() => {
+      checkStatus();
+      checkDoorStatus();
+    }, 8000);
     return () => clearInterval(timer);
-  }, [checkStatus]);
+  }, [checkStatus, checkDoorStatus]);
 
   const handleScan = async () => {
     if (!sessionId) {
@@ -88,6 +156,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         throw new Error(data.error || `Scan failed (${res.status})`);
       }
       setResult(data.reading);
+      setCountdown(5); // Start 5-second countdown to auto-close door after machine is removed
       if (onScanSuccess && data.reading) {
         onScanSuccess(data.reading);
       }
@@ -118,11 +187,79 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         </div>
 
         {/* Live Badges */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <StatusBadge label="Scanner" online={scannerOnline} />
-          <StatusBadge label="Device" online={esp32Online} />
+          <StatusBadge label="Camera" online={esp32Online} />
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+            background: doorStatus === 'open' ? '#ecfdf5' : (doorStatus === 'moving' ? '#fffbeb' : '#f1f5f9'),
+            color: doorStatus === 'open' ? '#065f46' : (doorStatus === 'moving' ? '#b45309' : '#475569'),
+            border: `1px solid ${doorStatus === 'open' ? '#a7f3d0' : (doorStatus === 'moving' ? '#fde68a' : '#cbd5e1')}`
+          }}>
+            <span>🚪</span>
+            <span>Door: {doorStatus === 'open' ? 'Open (0°)' : (doorStatus === 'moving' ? 'Moving...' : 'Closed (90°)')}</span>
+          </span>
         </div>
       </div>
+
+      {/* 5-Second Post-Scan Door Countdown Banner */}
+      {countdown !== null && (
+        <div style={{
+          background: '#ecfdf5',
+          border: '1px solid #6ee7b7',
+          color: '#065f46',
+          padding: '12px 16px',
+          borderRadius: 12,
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 10,
+          fontWeight: 600,
+          fontSize: 13
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>⏱️</span>
+            <span>Reading captured! Please retrieve your device. Bay door closing in <b>{countdown}s</b>...</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => { closeDoor(); setCountdown(null); }}
+              style={{
+                padding: '6px 12px',
+                background: '#047857',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Close Door Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setCountdown(null)}
+              style={{
+                padding: '6px 12px',
+                background: '#ffffff',
+                color: '#047857',
+                border: '1px solid #a7f3d0',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Keep Open
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Scan Trigger Button */}
       <button
@@ -164,6 +301,53 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
           <>Get Vitals</>
         )}
       </button>
+
+      {/* Manual Door Override Bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 12 }}>
+        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Bay Door:</span>
+        <button
+          type="button"
+          onClick={openDoor}
+          disabled={doorStatus === 'open' || doorStatus === 'moving'}
+          style={{
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            borderRadius: 8,
+            padding: '5px 12px',
+            fontSize: 12,
+            color: '#334155',
+            fontWeight: 600,
+            cursor: doorStatus === 'open' ? 'default' : 'pointer',
+            opacity: doorStatus === 'open' ? 0.6 : 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4
+          }}
+        >
+          <span>🚪</span> Open (0°)
+        </button>
+        <button
+          type="button"
+          onClick={closeDoor}
+          disabled={doorStatus === 'closed' || doorStatus === 'moving'}
+          style={{
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            borderRadius: 8,
+            padding: '5px 12px',
+            fontSize: 12,
+            color: '#334155',
+            fontWeight: 600,
+            cursor: doorStatus === 'closed' ? 'default' : 'pointer',
+            opacity: doorStatus === 'closed' ? 0.6 : 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4
+          }}
+        >
+          <span>🔒</span> Close (90°)
+        </button>
+      </div>
 
       {/* Error Message */}
       {error && (

@@ -206,5 +206,63 @@ async function handleKioskIngestion(req, res) {
 router.post('/intake', handleKioskIngestion);
 router.post('/submit', handleKioskIngestion);
 
+// ============================================================
+// Hospital Kiosk Door Controller Proxy (Node 3 — ESP32 Servo)
+// ============================================================
+const axios = require('axios');
+const getDoorControllerIP = () => process.env.DOOR_CONTROLLER_IP || '192.168.137.102';
+
+router.post('/door/open', async (req, res) => {
+  const ip = getDoorControllerIP();
+  try {
+    const espRes = await axios.get(`http://${ip}/door/open`, { timeout: 3000 });
+    const io = req.app.get('io');
+    if (io) io.emit('kiosk:door_state', { status: 'open', angle: 0 });
+    return res.json({ success: true, online: true, ...espRes.data });
+  } catch (err) {
+    return res.json({
+      success: true,
+      online: false,
+      status: 'offline',
+      angle: null,
+      error: `Door controller unreachable at http://${ip}`
+    });
+  }
+});
+
+router.post('/door/close', async (req, res) => {
+  const ip = getDoorControllerIP();
+  try {
+    const espRes = await axios.get(`http://${ip}/door/close`, { timeout: 3000 });
+    const io = req.app.get('io');
+    if (io) io.emit('kiosk:door_state', { status: 'closed', angle: 90 });
+    return res.json({ success: true, online: true, ...espRes.data });
+  } catch (err) {
+    return res.json({
+      success: true,
+      online: false,
+      status: 'offline',
+      angle: null,
+      error: `Door controller unreachable at http://${ip}`
+    });
+  }
+});
+
+router.get('/door/status', async (req, res) => {
+  const ip = getDoorControllerIP();
+  try {
+    const espRes = await axios.get(`http://${ip}/door/status`, { timeout: 2500 });
+    return res.json({ success: true, online: true, ...espRes.data });
+  } catch (err) {
+    return res.json({
+      success: true,
+      online: false,
+      status: 'offline',
+      angle: null,
+      error: `Door controller unreachable at http://${ip}`
+    });
+  }
+});
+
 module.exports = router;
 module.exports.handleKioskIngestion = handleKioskIngestion;
