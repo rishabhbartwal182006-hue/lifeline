@@ -46,6 +46,7 @@
 </head>
 <body class="bg-white font-sans text-slate-800 min-h-screen flex flex-col justify-between antialiased select-none">
 
+<<<<<<< Updated upstream
   <!-- UPPER HALF: DEEP BLUE CONTAINER WITH BACKGROUND IMAGE -->
   <div class="bg-top-blue text-white pb-36 relative overflow-hidden">
     
@@ -59,6 +60,123 @@
         <span class="text-2xl font-black tracking-wider text-white">
           Medi<span class="text-cyan-400">kiosk</span>
         </span>
+=======
+<body id="top">
+
+  <!-- =======================================================
+       NAV
+  ======================================================== -->
+
+  <nav>
+
+    <a href="#top" class="logo">
+      MediKiosk<span class="logo-dot">.</span>
+    </a>
+
+    <div class="nav-separator"></div>
+
+    <span class="nav-label">
+      POINT-OF-CARE PLATFORM
+    </span>
+
+    <div class="nav-links">
+
+      <a href="#features" class="nav-link">
+        Features
+      </a>
+
+      <a href="#workflow" class="nav-link">
+        Workflow
+      </a>
+
+      <a href="#triage" class="nav-link">
+        Triage
+      </a>
+
+      <a
+        href="/dashboard/index.html"
+        class="nav-doctor"
+      >
+        Doctor Dashboard →
+      </a>
+
+    </div>
+
+  </nav>
+
+
+  <!-- =======================================================
+       HERO
+  ======================================================== -->
+
+  <header class="hero">
+
+    <div class="hero-grid"></div>
+
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+
+    <div class="hero-eyebrow">
+      Intelligent Clinical Workflow
+    </div>
+
+    <h1 class="hero-title">
+      Smarter care,<br>
+      <strong>from the first interaction</strong><span class="hero-dot">.</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      MediKiosk connects patient assessment, symptom intelligence,
+      vital collection and real-time triage into one streamlined
+      point-of-care workflow for patients and doctors.
+    </p>
+
+    <div class="hero-visual">
+      <canvas id="heroCanvas"></canvas>
+    </div>
+
+    <div class="hero-actions">
+
+      <a
+        href="/patientTerminal/index.html"
+        class="btn btn-primary"
+      >
+        Start Patient Assessment →
+      </a>
+
+      <a
+        href="/dashboard/index.html"
+        class="btn btn-secondary"
+      >
+        Open Doctor Dashboard
+      </a>
+
+    </div>
+
+    <div class="hero-terminal">
+      <span>INPUT</span>
+      symptoms + questionnaire + vitals
+      &nbsp;→&nbsp;
+      <span>TRIAGE</span>
+      &nbsp;→&nbsp;
+      <span>CLINICAL REVIEW</span>
+    </div>
+
+  </header>
+
+
+  <!-- =======================================================
+       TICKER
+  ======================================================== -->
+
+  <div class="ticker">
+
+    <div class="ticker-track">
+
+      <div class="ticker-item">
+        <span class="ticker-dot"></span>
+        Patient Kiosk
+>>>>>>> Stashed changes
       </div>
 
       <!-- Quick Nav Links -->
@@ -132,9 +250,332 @@
             <span class="font-bold text-white">OPD Station</span>
           </div>
 
+<<<<<<< Updated upstream
           <!-- Action Button -->
           <a href="#" onclick="event.preventDefault(); window.location.href = 'http://' + (window.location.hostname || 'localhost') + ':5173';" id="linkHospitalKiosk" class="w-full py-3 bg-[#3275f8] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
             Launch Hospital Kiosk <i class="fa-solid fa-arrow-right text-[11px]"></i>
+=======
+          <span class="triage-action">
+            PRIORITY 02
+          </span>
+
+        </div>
+
+
+        <div class="triage-level">
+
+          <div class="triage-left">
+
+            <span class="triage-marker routine"></span>
+
+            <div>
+              <div class="triage-name">
+                ROUTINE
+              </div>
+
+              <div class="triage-desc">
+                Standard clinical queue
+              </div>
+            </div>
+
+          </div>
+
+          <span class="triage-action">
+            PRIORITY 03
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       WORKFLOW
+  ======================================================== -->
+
+  <section class="section workflow" id="workflow">
+
+    <div class="section-eyebrow reveal">
+      — System Flow
+    </div>
+
+    <h2 class="section-title reveal">
+      A continuous path from
+      <strong>input to review.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      Every stage has a clear role in moving structured information
+      from the patient kiosk toward the clinical dashboard.
+    </p>
+
+
+    <div class="workflow-box reveal">
+
+      <div class="flow">
+
+        <div class="flow-node">
+          <strong>PATIENT</strong>
+          <span>symptoms</span>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>QUESTIONNAIRE</strong>
+          <span>answers</span>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>VITALS</strong>
+          <span>readings</span>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>EVENT</strong>
+          <span>validated</span>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>TRIAGE</strong>
+          <span>rules</span>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>DOCTOR</strong>
+          <span>review</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       VITALS
+  ======================================================== -->
+
+  <section class="section vitals" id="vitals">
+
+    <div class="section-eyebrow reveal">
+      — Vital Monitoring
+    </div>
+
+    <h2 class="section-title reveal">
+      Structured signals,
+      <strong>one clinical context.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk supports multiple vital categories as part of
+      the patient assessment workflow.
+    </p>
+
+
+    <div class="vitals-grid">
+
+      <div class="vital reveal">
+        <div class="vital-symbol">♥</div>
+        <div class="vital-name">Heart Rate</div>
+        <div class="vital-code">BPM</div>
+      </div>
+
+      <div class="vital reveal">
+        <div class="vital-symbol">⌁</div>
+        <div class="vital-name">Blood Pressure</div>
+        <div class="vital-code">SYS / DIA</div>
+      </div>
+
+      <div class="vital reveal">
+        <div class="vital-symbol">O₂</div>
+        <div class="vital-name">SpO₂</div>
+        <div class="vital-code">%</div>
+      </div>
+
+      <div class="vital reveal">
+        <div class="vital-symbol">°</div>
+        <div class="vital-name">Temperature</div>
+        <div class="vital-code">°C</div>
+      </div>
+
+      <div class="vital reveal">
+        <div class="vital-symbol">↕</div>
+        <div class="vital-name">Respiratory Rate</div>
+        <div class="vital-code">/ MIN</div>
+      </div>
+
+      <div class="vital reveal">
+        <div class="vital-symbol">◈</div>
+        <div class="vital-name">Blood Glucose</div>
+        <div class="vital-code">MG/DL</div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       PORTALS
+  ======================================================== -->
+
+  <section class="section portals" id="portals">
+
+    <div class="section-eyebrow reveal">
+      — Access
+    </div>
+
+    <h2 class="section-title reveal">
+      Two interfaces.
+      <strong>One workflow.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      Patients begin the assessment from the kiosk. Doctors
+      receive the resulting clinical workflow in the dashboard.
+    </p>
+
+
+    <div class="portal-grid">
+
+      <!-- PATIENT -->
+
+      <article class="portal patient reveal">
+
+        <div class="portal-label">
+          Patient Portal
+        </div>
+
+        <h3 class="portal-title">
+          Start your assessment.
+        </h3>
+
+        <p class="portal-text">
+          Enter symptoms, answer guided questions and provide
+          available vital information through the MediKiosk
+          patient experience.
+        </p>
+
+        <a
+          href="/patientTerminal/dist/index.html"
+          class="portal-btn"
+        >
+          Open Patient Kiosk →
+        </a>
+
+        <div class="portal-bg"></div>
+
+      </article>
+
+
+      <!-- DOCTOR -->
+
+      <article class="portal doctor reveal">
+
+        <div class="portal-label">
+          Doctor Portal
+        </div>
+
+        <h3 class="portal-title">
+          Review the clinical queue.
+        </h3>
+
+        <p class="portal-text">
+          View incoming encounters, triage states, patient
+          context and priority information through the
+          doctor-facing dashboard.
+        </p>
+
+        <a
+          href="/dashboard/index.html"
+          class="portal-btn"
+        >
+          Open Doctor Dashboard →
+        </a>
+
+        <div class="portal-bg"></div>
+
+      </article>
+
+      <!-- HOME CARE COMPANION (NODE 2) -->
+      <article class="portal reveal" style="border-top: 3px solid #10b981;">
+
+        <div class="portal-label" style="color: #059669; font-weight: 700;">
+          Node 2 — Home Care Hub
+        </div>
+
+        <h3 class="portal-title">
+          Personal Home Station & RPM
+        </h3>
+
+        <p class="portal-text">
+          Daily vitals capture via Home ESP32-CAM (192.168.137.101), medicine reminder adherence tracking, and live telemetry to doctor.
+        </p>
+
+        <a
+          href="/home-patient"
+          class="portal-btn"
+          style="background: #059669; color: #ffffff;"
+        >
+          Open Home Patient Hub →
+        </a>
+
+        <div class="portal-bg"></div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       CTA
+  ======================================================== -->
+
+  <section class="cta">
+
+    <div class="cta-inner">
+
+      <div>
+
+        <div class="section-eyebrow">
+          — Get started
+        </div>
+
+        <h2 class="cta-title">
+          Connect the first interaction
+          <strong>to clinical review.</strong>
+        </h2>
+
+        <p class="cta-text">
+          MediKiosk brings patient intake, structured assessment,
+          triage and doctor review together in a single point-of-care
+          workflow.
+        </p>
+
+        <div class="cta-actions">
+
+          <a
+            href="/patientTerminal/dist/index.html"
+            class="btn btn-primary"
+          >
+            Start Patient Kiosk →
+>>>>>>> Stashed changes
           </a>
         </div>
 
