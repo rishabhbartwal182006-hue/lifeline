@@ -18,6 +18,8 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const vitalsRoutes  = require('./routes/vitalsRoutes');
 const hprAuthMiddleware = require('./middleware/hprAuth');
 const ocrRoutes = require('./routes/ocrRoutes');
+const medicationRoutes = require('./routes/medicationRoutes');
+const homeCareRoutes = require('./routes/homeCareRoutes');
 const { evaluateMultiSystemTriage } = require('./services/redFlagRules');
 
 const app = express();
@@ -54,6 +56,15 @@ app.get('/kiosk', (req, res) => {
 app.get(['/patient-terminal', '/terminal'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'patientTerminal', 'dist', 'index.html'));
 });
+app.get(['/home-patient', '/home-care', '/personal-device'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'homePatient.html'));
+});
+
+// LifeLine 360 — Home Care & Remote Patient Monitoring (RPM)
+app.use('/api/v1/patient', medicationRoutes.router);
+app.use('/api/v1/patient', homeCareRoutes.router);
+app.use('/api/v1/homecare', homeCareRoutes.router);
+app.use('/api/v1', homeCareRoutes.router);
 
 // API Base Routes Mounting
 app.use('/api/v1/kiosk', kioskRoutes);
@@ -287,6 +298,74 @@ app.get('/api/doctor/queue', async (req, res) => {
         }
       }
     }
+    // Integrate Remote Home Care Patients into Doctor Command Queue
+    try {
+      const { remotePatientsStore } = homeCareRoutes;
+      if (remotePatientsStore) {
+        for (const rp of remotePatientsStore.values()) {
+          const id = rp.patientId;
+          const latestVital = rp.vitalsHistory && rp.vitalsHistory.length > 0
+            ? rp.vitalsHistory[rp.vitalsHistory.length - 1]
+            : null;
+          const hasActiveSos = (rp.alerts || []).some(a => a.type === 'EMERGENCY_SOS' && !a.acknowledged);
+          const hasVitalAlert = (rp.alerts || []).some(a => a.type !== 'EMERGENCY_SOS' && !a.acknowledged);
+
+          const triageLevel = hasActiveSos ? 'EMERGENCY' : (hasVitalAlert ? 'URGENT' : 'ROUTINE');
+          const triageStatus = hasActiveSos ? 'critical' : (hasVitalAlert ? 'urgent' : 'waiting');
+
+          const formattedVitals = latestVital ? {
+            blood_glucose: latestVital.blood_glucose,
+            glucose: latestVital.blood_glucose,
+            bloodSugar: `${latestVital.blood_glucose} mg/dL`,
+            bp: `${latestVital.bp_systolic}/${latestVital.bp_diastolic}`,
+            bp_systolic: latestVital.bp_systolic,
+            bp_diastolic: latestVital.bp_diastolic,
+            hr: latestVital.heart_rate,
+            heart_rate: latestVital.heart_rate,
+            spo2: latestVital.spo2,
+            temp: latestVital.temperature
+          } : {};
+
+          const redFlags = [];
+          if (hasActiveSos) redFlags.push('EMERGENCY TELE-SOS ACTIVATED AT HOME');
+          if (latestVital && latestVital.blood_glucose > 200) redFlags.push(`Hyperglycemia: ${latestVital.blood_glucose} mg/dL`);
+          if (latestVital && latestVital.bp_systolic > 160) redFlags.push(`Hypertensive Crisis: ${latestVital.bp_systolic}/${latestVital.bp_diastolic} mmHg`);
+
+          if (!existingIds.has(id)) {
+            patientQueue.push({
+              patientId: id,
+              sessionId: `HOME-CARE-${id}`,
+              name: `[Home Care] ${rp.name}`,
+              age: rp.age,
+              gender: rp.gender || "M",
+              symptoms: [rp.condition],
+              chiefComplaint: `Home Remote Monitoring: ${rp.condition}`,
+              vitals: formattedVitals,
+              altitudeContext: null,
+              triageLevel: triageLevel,
+              triage: triageLevel,
+              urgencyScore: hasActiveSos ? 1 : (hasVitalAlert ? 2 : 4),
+              redFlags: redFlags,
+              status: triageStatus,
+              isRemoteCare: true,
+              homeDeviceIP: rp.deviceIP,
+              timestamp: rp.lastSync || new Date().toISOString()
+            });
+            existingIds.add(id);
+          } else {
+            const existing = patientQueue.find(p => p.patientId === id);
+            if (existing) {
+              existing.vitals = formattedVitals;
+              existing.triageLevel = triageLevel;
+              existing.triage = triageLevel;
+              existing.status = triageStatus;
+              existing.redFlags = redFlags;
+              existing.timestamp = rp.lastSync || existing.timestamp;
+            }
+          }
+        }
+      }
+    } catch (_) {}
   } catch (err) {
     // Graceful fallback to patientQueue
   }

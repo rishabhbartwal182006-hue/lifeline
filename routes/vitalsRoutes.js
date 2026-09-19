@@ -125,6 +125,7 @@ router.post('/scan', async (req, res) => {
         api_key: GROQ_API_KEY,
         model: 'qwen/qwen3.8-27b',
         provider: 'groq',
+        device_target: req.body.device_target || (req.body.source === 'home' ? 'home' : 'hospital'),
         expected_type: requestedType,
         vital_type: requestedType
       },
@@ -416,23 +417,25 @@ router.post('/scan', async (req, res) => {
 //  Returns health of FastAPI scanner + ESP32-CAM
 // ══════════════════════════════════════════════════════════════
 router.get('/status', async (req, res) => {
+  const target = req.query.target || 'hospital';
   let scannerOnline = false;
   let esp32Online   = false;
-  let esp32Ip       = process.env.ESP32_URL || 'http://vitals-cam.local';
+  let esp32Ip       = target === 'home' ? 'http://192.168.137.101' : (process.env.ESP32_URL || 'http://192.168.137.100');
 
   // Check FastAPI
   try {
-    const r = await axios.get(`${SCANNER_URL}/health`, { timeout: 3000 });
+    const r = await axios.get(`${SCANNER_URL}/health`, { timeout: 2000 });
     scannerOnline = r.status === 200;
   } catch (_) {
     scannerOnline = false;
   }
 
-  // Check ESP32 via FastAPI proxy (avoids mDNS issues in browser)
+  // Check ESP32 via FastAPI proxy
   if (scannerOnline) {
     try {
-      const r = await axios.get(`${SCANNER_URL}/api/esp32-status`, { timeout: 5000 });
+      const r = await axios.get(`${SCANNER_URL}/api/esp32-status?target=${target}`, { timeout: 3000 });
       esp32Online = r.data?.online === true;
+      if (r.data?.url) esp32Ip = r.data.url;
     } catch (_) {
       esp32Online = false;
     }
@@ -440,6 +443,7 @@ router.get('/status', async (req, res) => {
 
   return res.json({
     success: true,
+    target,
     scanner_online: scannerOnline,
     esp32_online: esp32Online,
     esp32_url: esp32Ip,

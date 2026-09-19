@@ -108,68 +108,87 @@
   <div class="bg-white flex-1 relative pb-12">
     <div class="max-w-5xl mx-auto px-6 -mt-24">
       
-      <!-- DUAL CARDS GRID -->
-      <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- 3-PILLAR ECOSYSTEM CARDS GRID -->
+      <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
         
-        <!-- CARD 1: PATIENT KIOSK -->
-        <div class="bg-gradient-to-b from-[#1d61e8] to-[#1142b3] text-white rounded-3xl p-6 border border-blue-400/40 glow-blue flex flex-col justify-between relative overflow-hidden h-[310px] group transition-all duration-300 hover:-translate-y-1">
+        <!-- CARD 1: PATIENT KIOSK (HOSPITAL NODE) -->
+        <div class="bg-gradient-to-b from-[#1d61e8] to-[#1142b3] text-white rounded-3xl p-6 border border-blue-400/40 glow-blue flex flex-col justify-between relative overflow-hidden h-[330px] group transition-all duration-300 hover:-translate-y-1">
           <div class="flex justify-between items-start z-10">
-            <div class="max-w-[52%]">
+            <div>
               <div class="flex items-center gap-2 mb-2">
-                <h2 class="text-2xl font-black tracking-wider leading-tight uppercase">PATIENT<br>KIOSK</h2>
+                <h2 class="text-xl font-black tracking-wider leading-tight uppercase">HOSPITAL<br>KIOSK</h2>
                 <div class="w-8 h-8 rounded-lg bg-blue-400/20 border border-blue-300/30 flex items-center justify-center text-cyan-300 text-sm">
-                  <i class="fa-solid fa-id-badge"></i>
+                  <i class="fa-solid fa-hospital"></i>
                 </div>
               </div>
               <p class="text-blue-100 text-xs leading-relaxed mt-2 tracking-wide">
-                Check-in, scan documents, verify your identity, and measure vitals with automated assistance.
+                OPD walk-in self check-in, dynamic AI triage, and hospital ESP32 vital scanner.
               </p>
-            </div>
-
-            <!-- Digital Kiosk Graphic -->
-            <div class="w-[42%] h-36 rounded-2xl kiosk-graphic shadow-inner flex flex-col items-center justify-center relative p-3 text-center overflow-hidden">
-              <div class="w-12 h-16 bg-slate-900 rounded-lg border-2 border-cyan-400/80 flex flex-col items-center justify-center shadow-lg mb-1 relative">
-                <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping absolute top-1"></div>
-                <i class="fa-solid fa-fingerprint text-cyan-300 text-lg mt-2"></i>
-              </div>
-              <span class="text-[10px] font-bold text-cyan-200 tracking-wider uppercase">Interactive Terminal</span>
             </div>
           </div>
 
+          <div class="py-2 flex items-center justify-between text-[11px] text-blue-200 border-t border-blue-400/30">
+            <span><i class="fa-solid fa-microchip mr-1 text-cyan-300"></i> Cam 1: 192.168.137.100</span>
+            <span class="font-bold text-white">OPD Station</span>
+          </div>
+
           <!-- Action Button -->
-          <a href="http://localhost:5173" class="w-full py-3 bg-[#3275f8] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 mt-4 tracking-wider">
-            Start Patient Portal <i class="fa-solid fa-arrow-right text-[11px]"></i>
+          <a href="http://localhost:5173" class="w-full py-3 bg-[#3275f8] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+            Launch Hospital Kiosk <i class="fa-solid fa-arrow-right text-[11px]"></i>
           </a>
         </div>
 
-        <!-- CARD 2: DOCTOR PORTAL -->
-        <div class="bg-gradient-to-b from-[#0a233c] to-[#041c22] text-white rounded-3xl p-6 border border-teal-500/40 glow-teal flex flex-col justify-between relative overflow-hidden h-[310px] group transition-all duration-300 hover:-translate-y-1">
+        <!-- CARD 2: HOME CARE COMPANION (PERSONAL HOME NODE) -->
+        <div class="bg-gradient-to-b from-[#059669] to-[#064e3b] text-white rounded-3xl p-6 border border-emerald-400/40 glow-teal flex flex-col justify-between relative overflow-hidden h-[330px] group transition-all duration-300 hover:-translate-y-1">
           <div class="flex justify-between items-start z-10">
-            <div class="max-w-[52%]">
+            <div>
               <div class="flex items-center gap-2 mb-2">
-                <h2 class="text-2xl font-black tracking-wider leading-tight uppercase">DOCTOR<br>PORTAL</h2>
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-teal-300 text-sm">
+                <h2 class="text-xl font-black tracking-wider leading-tight uppercase">HOME CARE<br>COMPANION</h2>
+                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-300/30 flex items-center justify-center text-emerald-300 text-sm">
+                  <i class="fa-solid fa-house-medical"></i>
+                </div>
+              </div>
+              <p class="text-emerald-100 text-xs leading-relaxed mt-2 tracking-wide">
+                Personal home hub for daily checkups, medicine reminders, and home ESP32 scanner.
+              </p>
+            </div>
+          </div>
+
+          <div class="py-2 flex items-center justify-between text-[11px] text-emerald-200 border-t border-emerald-400/30">
+            <span><i class="fa-solid fa-video mr-1 text-emerald-300"></i> Cam 2: 192.168.137.101</span>
+            <span class="font-bold text-white">RPM Sync</span>
+          </div>
+
+          <!-- Action Button -->
+          <a href="/home-patient" class="w-full py-3 bg-[#10b981] hover:bg-[#059669] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+            Open Home Patient Portal <i class="fa-solid fa-arrow-right text-[11px]"></i>
+          </a>
+        </div>
+
+        <!-- CARD 3: DOCTOR GATEWAY (CLINICAL & RPM EMR) -->
+        <div class="bg-gradient-to-b from-[#0a233c] to-[#041c22] text-white rounded-3xl p-6 border border-teal-500/40 glow-teal flex flex-col justify-between relative overflow-hidden h-[330px] group transition-all duration-300 hover:-translate-y-1">
+          <div class="flex justify-between items-start z-10">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <h2 class="text-xl font-black tracking-wider leading-tight uppercase">DOCTOR<br>GATEWAY</h2>
+                <div class="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-300 text-sm">
                   <i class="fa-solid fa-user-doctor"></i>
                 </div>
               </div>
               <p class="text-slate-300 text-xs leading-relaxed mt-2 tracking-wide">
-                Access live queues, monitor dynamic triage, edit SOAP notes, and manage clinical EMRs.
+                Live OPD intake queue + Remote Patient Monitoring (RPM) with instant red-flag alerts.
               </p>
-            </div>
-
-            <!-- Digital Doctor Graphic -->
-            <div class="w-[42%] h-36 rounded-2xl doctor-graphic shadow-inner flex flex-col items-center justify-center relative p-3 text-center overflow-hidden">
-              <div class="w-16 h-12 bg-slate-900 rounded-lg border-2 border-teal-400/80 flex flex-col items-center justify-center shadow-lg mb-1 relative">
-                <i class="fa-solid fa-chart-line text-teal-300 text-base"></i>
-                <div class="w-10 h-1 bg-teal-400/50 rounded-full mt-1"></div>
-              </div>
-              <span class="text-[10px] font-bold text-teal-200 tracking-wider uppercase">EMR Dashboard</span>
             </div>
           </div>
 
+          <div class="py-2 flex items-center justify-between text-[11px] text-teal-200 border-t border-teal-400/30">
+            <span><i class="fa-solid fa-satellite-dish mr-1 text-teal-300"></i> Dual-Node Command</span>
+            <span class="font-bold text-white">Dr. Ananya Roy</span>
+          </div>
+
           <!-- Action Button -->
-          <a href="/dashboard/index.html" class="w-full py-3 bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 mt-4 tracking-wider">
-            Access Doctor Gateway <i class="fa-solid fa-arrow-right text-[11px]"></i>
+          <a href="/dashboard/index.html" class="w-full py-3 bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+            Access Doctor Command <i class="fa-solid fa-arrow-right text-[11px]"></i>
           </a>
         </div>
 
