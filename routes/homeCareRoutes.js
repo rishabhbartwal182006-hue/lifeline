@@ -31,7 +31,8 @@ function initRemotePatients() {
     deviceStatus: 'Disconnected',
     vitalsHistory: [],
     alerts: [],
-    lastSync: null
+    lastSync: null,
+    environment: null
   });
 
   remotePatientsStore.set('PT-HOME-02', {
@@ -48,7 +49,8 @@ function initRemotePatients() {
     deviceStatus: 'Disconnected',
     vitalsHistory: [],
     alerts: [],
-    lastSync: null
+    lastSync: null,
+    environment: null
   });
 }
 
@@ -315,6 +317,70 @@ router.post('/:patientId/sos', (req, res) => {
   });
 });
 
+// ── GET /api/v1/patient/:patientId/environment ────────────────
+router.get('/:patientId/environment', async (req, res) => {
+  const { patientId } = req.params;
+  let patient = remotePatientsStore.get(patientId);
+  const deviceIP = (patient && patient.deviceIP) || '192.168.137.101';
+
+  try {
+    const espRes = await axios.get(`http://${deviceIP}/environment`, { timeout: 2500 });
+    const envData = espRes.data || {};
+
+    const tempC = (envData.temperature_c !== undefined && envData.temperature_c !== null)
+      ? Number(envData.temperature_c)
+      : 24.5;
+    const tempF = (envData.temperature_f !== undefined && envData.temperature_f !== null)
+      ? Number(envData.temperature_f)
+      : Number((tempC * 9 / 5 + 32).toFixed(1));
+    const hum = (envData.humidity_pct !== undefined && envData.humidity_pct !== null)
+      ? Number(envData.humidity_pct)
+      : 50.0;
+
+    const result = {
+      success: true,
+      online: envData.sensor_online !== false,
+      temperature_c: tempC,
+      temperature_f: tempF,
+      humidity_pct: hum,
+      sensor_type: envData.sensor_type || 'DHT11',
+      gpio: envData.gpio || 13,
+      device_id: envData.device_id || 'LIFELINE-HOME-NODE-02',
+      timestamp: new Date().toISOString()
+    };
+
+    if (patient) {
+      patient.environment = result;
+      patient.deviceStatus = 'Connected';
+      patient.lastSync = result.timestamp;
+    }
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('rpm:environment_sync', {
+        patientId,
+        environment: result
+      });
+    }
+
+    return res.json(result);
+  } catch (err) {
+    const cached = patient && patient.environment;
+    return res.json({
+      success: true,
+      online: false,
+      temperature_c: cached ? cached.temperature_c : null,
+      temperature_f: cached ? cached.temperature_f : null,
+      humidity_pct: cached ? cached.humidity_pct : null,
+      sensor_type: 'DHT11',
+      gpio: 13,
+      device_id: 'LIFELINE-HOME-NODE-02',
+      error: 'Device unreachable at http://' + deviceIP + '/environment',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // ── GET /api/v1/doctor/remote-patients ────────────────────────
 router.get('/doctor/remote-patients', (req, res) => {
   const patientsList = Array.from(remotePatientsStore.values()).map(p => {
@@ -339,6 +405,7 @@ router.get('/doctor/remote-patients', (req, res) => {
       complianceRate,
       medicationsSummary: `${taken}/${total} taken today`,
       latestVital,
+      environment: p.environment || null,
       activeAlertsCount: (p.alerts || []).filter(a => !a.acknowledged).length,
       alerts: p.alerts || []
     };

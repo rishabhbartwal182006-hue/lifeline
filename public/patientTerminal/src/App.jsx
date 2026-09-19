@@ -46,6 +46,7 @@ function App() {
   const [isResident, setIsResident] = useState(false);
   const [showNovaModal, setShowNovaModal] = useState(false);
   const [reviewEditMode, setReviewEditMode] = useState(false);
+  const [ambientEnv, setAmbientEnv] = useState(null);
 
   // Fetch facility altitude config from backend
   useEffect(() => {
@@ -65,6 +66,29 @@ function App() {
       .catch(() => {
         setAltitudeMeters("");
       });
+  }, []);
+
+  // Poll DHT11 Ambient Climate from ESP32 Node 2 via backend
+  useEffect(() => {
+    const backendHost = window.location.hostname || 'localhost';
+    const envUrl = (window.location.port === '5173')
+      ? `http://${backendHost}:4000/api/v1/patient/PT-HOME-01/environment`
+      : '/api/v1/patient/PT-HOME-01/environment';
+
+    const fetchEnv = () => {
+      fetch(envUrl)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.temperature_c !== null && data.temperature_c !== undefined) {
+            setAmbientEnv(data);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchEnv();
+    const interval = setInterval(fetchEnv, 6000);
+    return () => clearInterval(interval);
   }, []);
 
   const [patient, setPatient] = useState({
@@ -509,6 +533,30 @@ function App() {
         >
           ← Return to Portal
         </a>
+        {ambientEnv && ambientEnv.temperature_c !== null && (
+          <div
+            className="kiosk-status"
+            style={{
+              background: "#ecfdf5",
+              border: "1px solid #a7f3d0",
+              color: "#065f46",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 12px",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "600"
+            }}
+            title="DHT11 Room Climate Stream (Node 2)"
+          >
+            <span>🌡️</span>
+            <span>{Number(ambientEnv.temperature_c).toFixed(1)}°C</span>
+            <span style={{ color: "#059669", opacity: 0.6 }}>|</span>
+            <span>💧</span>
+            <span>{Number(ambientEnv.humidity_pct).toFixed(0)}% RH</span>
+          </div>
+        )}
         <div className="kiosk-status">
           <span className="status-dot" />
           Kiosk ready
