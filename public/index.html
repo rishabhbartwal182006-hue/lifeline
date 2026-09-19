@@ -4,1511 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>MediKiosk — Intelligent Point-of-Care Triage</title>
+  <title>MediKiosk — Intelligent Point-of-Care Triage &amp; Clinical Intelligence</title>
 
+  <!-- Google Fonts: Plus Jakarta Sans for clinical modernity, Fira Code for telemetry -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
 
-  <style>
-    /* =========================================================
-       RESET / VARIABLES
-    ========================================================= */
-
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --bg: #f1f3f5;
-      --bg-warm: #faf9f6;
-      --surface: #ffffff;
-      --surface-soft: rgba(255,255,255,.68);
-
-      --text: #212529;
-      --text-soft: #757575;
-      --text-faint: #969696;
-
-      --purple: #9c8dd4;
-      --purple-dark: #8878c5;
-      --purple-soft: #ece9f8;
-
-      --red: #e77a73;
-      --red-soft: #faecea;
-
-      --green: #4ade80;
-      --green-dark: #20834c;
-      --green-soft: #e9f8ef;
-
-      --amber: #d99a32;
-      --amber-soft: #fbf2df;
-
-      --blue: #9c8dd4;
-      --blue-soft: #eaf1fa;
-
-      --border: rgba(0,0,0,.065);
-      --shadow: 0 8px 28px rgba(30,35,45,.055);
-
-      --font: "Inter", sans-serif;
-      --mono: "Fira Code", monospace;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      font-size: 14px;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      overflow-x: hidden;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* =========================================================
-       NAV
-    ========================================================= */
-
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-
-      height: 54px;
-      padding: 0 32px;
-
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      background: rgba(241,243,245,.84);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-size: .92rem;
-      font-weight: 700;
-      letter-spacing: -.02em;
-    }
-
-    .logo-dot {
-      color: var(--red);
-    }
-
-    .nav-separator {
-      width: 1px;
-      height: 20px;
-      background: var(--border);
-    }
-
-    .nav-label {
-      font-family: var(--mono);
-      font-size: .58rem;
-      color: var(--text-soft);
-      background: rgba(0,0,0,.045);
-      padding: 4px 9px;
-      border-radius: 999px;
-    }
-
-    .nav-links {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .nav-link {
-      padding: 7px 12px;
-      border-radius: 999px;
-      color: var(--text-soft);
-      font-size: .7rem;
-      transition: .2s ease;
-    }
-
-    .nav-link:hover {
-      color: var(--text);
-      background: rgba(0,0,0,.045);
-    }
-
-    .nav-doctor {
-      background: var(--purple);
-      color: white;
-      padding: 7px 15px;
-      border-radius: 999px;
-      font-size: .7rem;
-      font-weight: 600;
-      transition: .25s ease;
-    }
-
-    .nav-doctor:hover {
-      background: var(--purple-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 7px 18px rgba(156,141,212,.3);
-    }
-
-    /* =========================================================
-       HERO
-    ========================================================= */
-
-    .hero {
-      min-height: 100vh;
-      padding: 105px 32px 70px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      position: relative;
-      overflow: hidden;
-
-      background:
-        linear-gradient(
-          160deg,
-          #f1f3f5 0%,
-          #eef0f8 45%,
-          #f7f6f2 100%
-        );
-    }
-
-    .hero-grid {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .45;
-
-      background-image:
-        linear-gradient(rgba(156,141,212,.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(156,141,212,.07) 1px, transparent 1px);
-
-      background-size: 48px 48px;
-    }
-
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(156,141,212,.14),
-          transparent 68%
-        );
-
-      filter: blur(2px);
-      animation: floatOrb 9s ease-in-out infinite;
-    }
-
-    .orb.one {
-      width: 500px;
-      height: 500px;
-      top: -170px;
-      right: -160px;
-    }
-
-    .orb.two {
-      width: 340px;
-      height: 340px;
-      bottom: -130px;
-      left: -120px;
-      animation-delay: -4s;
-    }
-
-    .hero-eyebrow {
-      position: relative;
-      z-index: 2;
-
-      margin-bottom: 20px;
-
-      display: flex;
-      align-items: center;
-      gap: 9px;
-
-      font-family: var(--mono);
-      font-size: .58rem;
-      color: var(--purple);
-      text-transform: uppercase;
-      letter-spacing: .14em;
-    }
-
-    .hero-eyebrow::before,
-    .hero-eyebrow::after {
-      content: "—";
-      opacity: .45;
-    }
-
-    .hero-title {
-      position: relative;
-      z-index: 2;
-
-      max-width: 850px;
-
-      text-align: center;
-
-      font-size: clamp(3rem, 7vw, 6rem);
-      line-height: .98;
-      letter-spacing: -.055em;
-      font-weight: 300;
-
-      animation: fadeUp .7s ease both;
-    }
-
-    .hero-title strong {
-      font-weight: 700;
-    }
-
-    .hero-dot {
-      color: var(--red);
-    }
-
-    .hero-subtitle {
-      position: relative;
-      z-index: 2;
-
-      max-width: 650px;
-      margin-top: 22px;
-
-      text-align: center;
-
-      color: var(--text-soft);
-      font-size: .82rem;
-      line-height: 1.8;
-
-      animation: fadeUp .7s .1s ease both;
-    }
-
-    .hero-visual {
-      position: relative;
-      z-index: 2;
-
-      width: 360px;
-      height: 270px;
-
-      margin: 25px 0 10px;
-
-      animation: fadeUp .7s .18s ease both;
-    }
-
-    #heroCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .hero-actions {
-      position: relative;
-      z-index: 2;
-
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-
-      margin-top: 10px;
-
-      animation: fadeUp .7s .25s ease both;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-
-      border-radius: 999px;
-      padding: 12px 23px;
-
-      font-size: .76rem;
-      font-weight: 600;
-
-      transition: .25s ease;
-    }
-
-    .btn-primary {
-      color: white;
-      background: var(--purple);
-    }
-
-    .btn-primary:hover {
-      background: var(--purple-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 26px rgba(156,141,212,.32);
-    }
-
-    .btn-secondary {
-      color: var(--text-soft);
-      border: 1px solid rgba(0,0,0,.12);
-      background: rgba(255,255,255,.35);
-    }
-
-    .btn-secondary:hover {
-      color: var(--purple);
-      border-color: rgba(156,141,212,.45);
-      transform: translateY(-2px);
-    }
-
-    .hero-terminal {
-      position: relative;
-      z-index: 2;
-
-      margin-top: 30px;
-
-      padding: 8px 16px;
-
-      border: 1px solid var(--border);
-      border-radius: 999px;
-
-      background: rgba(255,255,255,.7);
-      box-shadow: var(--shadow);
-
-      font-family: var(--mono);
-      font-size: .58rem;
-      color: var(--text-soft);
-    }
-
-    .hero-terminal span {
-      color: var(--purple);
-    }
-
-    /* =========================================================
-       TICKER
-    ========================================================= */
-
-    .ticker {
-      overflow: hidden;
-
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-
-      background: var(--bg-warm);
-    }
-
-    .ticker-track {
-      width: max-content;
-
-      display: flex;
-
-      animation: ticker 32s linear infinite;
-    }
-
-    .ticker-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 11px 28px;
-
-      font-family: var(--mono);
-      font-size: .56rem;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-
-      border-right: 1px solid var(--border);
-    }
-
-    .ticker-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--purple);
-    }
-
-    /* =========================================================
-       GENERAL SECTIONS
-    ========================================================= */
-
-    .section {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 100px 32px;
-    }
-
-    .section-eyebrow {
-      margin-bottom: 13px;
-
-      color: var(--purple);
-
-      font-family: var(--mono);
-      font-size: .57rem;
-      text-transform: uppercase;
-      letter-spacing: .14em;
-    }
-
-    .section-title {
-      max-width: 720px;
-
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      line-height: 1.08;
-      letter-spacing: -.04em;
-      font-weight: 300;
-    }
-
-    .section-title strong {
-      font-weight: 700;
-    }
-
-    .section-description {
-      max-width: 550px;
-      margin-top: 15px;
-
-      color: var(--text-soft);
-      font-size: .78rem;
-      line-height: 1.8;
-    }
-
-    /* =========================================================
-       PLATFORM OVERVIEW
-    ========================================================= */
-
-    .overview {
-      background: var(--bg);
-    }
-
-    .overview-grid {
-      margin-top: 55px;
-
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 18px;
-    }
-
-    .overview-card {
-      min-height: 280px;
-
-      padding: 30px;
-
-      border-radius: 18px;
-      border: 1px solid var(--border);
-
-      background: rgba(255,255,255,.72);
-      box-shadow: var(--shadow);
-
-      position: relative;
-      overflow: hidden;
-    }
-
-    .overview-card.large {
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.92),
-          rgba(242,239,251,.7)
-        );
-    }
-
-    .card-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-
-      font-family: var(--mono);
-      font-size: .56rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--text-soft);
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 0 4px rgba(74,222,128,.12);
-    }
-
-    .overview-heading {
-      margin-top: 55px;
-
-      font-size: 1.45rem;
-      letter-spacing: -.03em;
-    }
-
-    .overview-text {
-      max-width: 570px;
-      margin-top: 10px;
-
-      color: var(--text-soft);
-      font-size: .74rem;
-      line-height: 1.8;
-    }
-
-    .overview-side {
-      display: grid;
-      grid-template-rows: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .mini-card {
-      padding: 24px;
-
-      border-radius: 18px;
-      border: 1px solid var(--border);
-
-      background: var(--surface);
-
-      transition: .25s ease;
-    }
-
-    .mini-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-
-    .mini-icon {
-      width: 34px;
-      height: 34px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 10px;
-
-      background: var(--purple-soft);
-      color: var(--purple-dark);
-
-      font-size: .9rem;
-    }
-
-    .mini-title {
-      margin-top: 16px;
-
-      font-size: .82rem;
-      font-weight: 700;
-    }
-
-    .mini-text {
-      margin-top: 6px;
-
-      color: var(--text-soft);
-      font-size: .68rem;
-      line-height: 1.65;
-    }
-
-    /* =========================================================
-       FEATURES
-    ========================================================= */
-
-    .features {
-      background: var(--bg-warm);
-    }
-
-    .feature-grid {
-      margin-top: 55px;
-
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .feature-card {
-      min-height: 220px;
-
-      padding: 25px;
-
-      border-radius: 16px;
-      border: 1px solid var(--border);
-
-      background: var(--surface);
-
-      box-shadow: 0 4px 14px rgba(0,0,0,.035);
-
-      position: relative;
-      overflow: hidden;
-
-      transition: .28s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 14px 32px rgba(30,35,45,.075);
-    }
-
-    .feature-card::after {
-      content: "";
-
-      position: absolute;
-      left: 0;
-      top: 0;
-
-      width: 100%;
-      height: 2px;
-
-      background: linear-gradient(
-        90deg,
-        var(--purple),
-        transparent
-      );
-
-      opacity: 0;
-
-      transition: .25s ease;
-    }
-
-    .feature-card:hover::after {
-      opacity: 1;
-    }
-
-    .feature-icon {
-      width: 40px;
-      height: 40px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 11px;
-
-      background: var(--purple-soft);
-      color: var(--purple-dark);
-
-      font-size: 1rem;
-    }
-
-    .feature-card.red .feature-icon {
-      background: var(--red-soft);
-      color: var(--red);
-    }
-
-    .feature-card.green .feature-icon {
-      background: var(--green-soft);
-      color: var(--green-dark);
-    }
-
-    .feature-card.blue .feature-icon {
-      background: var(--blue-soft);
-      color: var(--blue);
-    }
-
-    .feature-card.amber .feature-icon {
-      background: var(--amber-soft);
-      color: var(--amber);
-    }
-
-    .feature-title {
-      margin-top: 18px;
-
-      font-size: .86rem;
-      font-weight: 700;
-    }
-
-    .feature-text {
-      margin-top: 8px;
-
-      color: var(--text-soft);
-      font-size: .69rem;
-      line-height: 1.75;
-    }
-
-    .feature-code {
-      display: inline-block;
-
-      margin-top: 16px;
-      padding: 4px 7px;
-
-      border-radius: 5px;
-
-      color: var(--purple-dark);
-      background: var(--purple-soft);
-
-      font-family: var(--mono);
-      font-size: .52rem;
-    }
-
-    /* =========================================================
-       TRIAGE
-    ========================================================= */
-
-    .triage {
-      background: var(--bg);
-    }
-
-    .triage-panel {
-      margin-top: 55px;
-
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-
-      border: 1px solid var(--border);
-      border-radius: 20px;
-
-      overflow: hidden;
-
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-
-    .triage-info {
-      padding: 35px;
-    }
-
-    .triage-flow {
-      margin-top: 35px;
-
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .triage-step {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      padding: 12px 14px;
-
-      border: 1px solid var(--border);
-      border-radius: 10px;
-
-      background: #fff;
-
-      font-size: .69rem;
-    }
-
-    .triage-step-number {
-      width: 25px;
-      height: 25px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 7px;
-
-      background: var(--purple-soft);
-      color: var(--purple-dark);
-
-      font-family: var(--mono);
-      font-size: .52rem;
-    }
-
-    .triage-visual {
-      padding: 35px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #f8f7fb,
-          #f0eef8
-        );
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .triage-level {
-      padding: 18px;
-
-      border-radius: 13px;
-
-      background: white;
-      border: 1px solid var(--border);
-
-      margin-bottom: 10px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      transition: .2s ease;
-    }
-
-    .triage-level:hover {
-      transform: translateX(4px);
-    }
-
-    .triage-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .triage-marker {
-      width: 9px;
-      height: 35px;
-      border-radius: 8px;
-    }
-
-    .triage-marker.emergency {
-      background: var(--red);
-    }
-
-    .triage-marker.urgent {
-      background: var(--amber);
-    }
-
-    .triage-marker.routine {
-      background: var(--green);
-    }
-
-    .triage-name {
-      font-size: .78rem;
-      font-weight: 700;
-    }
-
-    .triage-desc {
-      margin-top: 3px;
-
-      color: var(--text-soft);
-      font-size: .61rem;
-    }
-
-    .triage-action {
-      font-family: var(--mono);
-      font-size: .52rem;
-      color: var(--text-faint);
-    }
-
-    /* =========================================================
-       DATA FLOW
-    ========================================================= */
-
-    .workflow {
-      background: var(--bg-warm);
-    }
-
-    .workflow-box {
-      margin-top: 55px;
-
-      padding: 32px;
-
-      border-radius: 20px;
-      border: 1px solid var(--border);
-
-      background: #fff;
-      box-shadow: var(--shadow);
-
-      overflow-x: auto;
-    }
-
-    .flow {
-      min-width: 720px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-    }
-
-    .flow-node {
-      min-width: 110px;
-
-      padding: 17px 12px;
-
-      border-radius: 11px;
-
-      border: 1px solid var(--border);
-
-      background: #fafafa;
-
-      text-align: center;
-    }
-
-    .flow-node strong {
-      display: block;
-
-      font-size: .62rem;
-      font-weight: 700;
-    }
-
-    .flow-node span {
-      display: block;
-
-      margin-top: 5px;
-
-      color: var(--text-soft);
-      font-family: var(--mono);
-      font-size: .47rem;
-    }
-
-    .flow-arrow {
-      color: var(--purple);
-      font-family: var(--mono);
-      font-size: .9rem;
-    }
-
-    /* =========================================================
-       VITALS
-    ========================================================= */
-
-    .vitals {
-      background: var(--bg);
-    }
-
-    .vitals-grid {
-      margin-top: 45px;
-
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-    }
-
-    .vital {
-      padding: 18px 12px;
-
-      border-radius: 13px;
-      border: 1px solid var(--border);
-
-      background: #fff;
-
-      text-align: center;
-    }
-
-    .vital-symbol {
-      font-size: .95rem;
-      color: var(--purple);
-    }
-
-    .vital-name {
-      margin-top: 9px;
-
-      font-size: .59rem;
-      font-weight: 600;
-    }
-
-    .vital-code {
-      margin-top: 4px;
-
-      font-family: var(--mono);
-      font-size: .46rem;
-      color: var(--text-faint);
-    }
-
-    /* =========================================================
-       PORTALS
-    ========================================================= */
-
-    .portals {
-      background:
-        linear-gradient(
-          180deg,
-          var(--bg) 0%,
-          #efedf7 100%
-        );
-    }
-
-    .portal-grid {
-      margin-top: 50px;
-
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .portal {
-      min-height: 250px;
-
-      padding: 30px;
-
-      border-radius: 19px;
-
-      position: relative;
-      overflow: hidden;
-
-      transition: .3s ease;
-    }
-
-    .portal:hover {
-      transform: translateY(-4px);
-    }
-
-    .portal.patient {
-      background:
-        linear-gradient(
-          145deg,
-          #fff,
-          #f1f5fb
-        );
-
-      border: 1px solid rgba(95,143,206,.18);
-    }
-
-    .portal.doctor {
-      background:
-        linear-gradient(
-          145deg,
-          #fff,
-          #f2effa
-        );
-
-      border: 1px solid rgba(156,141,212,.2);
-    }
-
-    .portal-label {
-      font-family: var(--mono);
-      font-size: .55rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-    }
-
-    .portal-title {
-      margin-top: 20px;
-
-      font-size: 1.55rem;
-      font-weight: 700;
-      letter-spacing: -.04em;
-    }
-
-    .portal-text {
-      max-width: 430px;
-
-      margin-top: 9px;
-
-      color: var(--text-soft);
-      font-size: .69rem;
-      line-height: 1.75;
-    }
-
-    .portal-btn {
-      display: inline-flex;
-
-      margin-top: 25px;
-
-      padding: 10px 17px;
-
-      border-radius: 999px;
-
-      color: white;
-
-      font-size: .65rem;
-      font-weight: 600;
-
-      transition: .2s ease;
-    }
-
-    .patient .portal-btn {
-      background: var(--blue);
-    }
-
-    .doctor .portal-btn {
-      background: var(--purple);
-    }
-
-    .portal-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,.1);
-    }
-
-    .portal-bg {
-      position: absolute;
-      right: -40px;
-      bottom: -80px;
-
-      width: 220px;
-      height: 220px;
-
-      border-radius: 50%;
-
-      border: 1px solid rgba(156,141,212,.15);
-    }
-
-    .portal-bg::after {
-      content: "";
-
-      position: absolute;
-      inset: 30px;
-
-      border-radius: 50%;
-
-      border: 1px dashed rgba(156,141,212,.2);
-    }
-
-    /* =========================================================
-       FINAL CTA
-    ========================================================= */
-
-    .cta {
-      padding: 100px 32px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #eeeff7,
-          #f8f7f3
-        );
-
-      border-top: 1px solid var(--border);
-    }
-
-    .cta-inner {
-      max-width: 1180px;
-      margin: auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 50px;
-    }
-
-    .cta-title {
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      font-weight: 300;
-      letter-spacing: -.04em;
-    }
-
-    .cta-title strong {
-      font-weight: 700;
-    }
-
-    .cta-text {
-      max-width: 550px;
-
-      margin-top: 13px;
-
-      color: var(--text-soft);
-      font-size: .75rem;
-      line-height: 1.8;
-    }
-
-    .cta-actions {
-      display: flex;
-      gap: 9px;
-      flex-wrap: wrap;
-
-      margin-top: 25px;
-    }
-
-    .cta-mark {
-      width: 180px;
-      height: 180px;
-
-      flex-shrink: 0;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 50%;
-
-      border: 1px solid rgba(156,141,212,.22);
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(156,141,212,.17),
-          rgba(255,255,255,.25) 55%,
-          transparent 70%
-        );
-    }
-
-    .cta-mark-inner {
-      width: 95px;
-      height: 95px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 28px;
-
-      background: rgba(255,255,255,.7);
-      border: 1px solid rgba(156,141,212,.25);
-
-      color: var(--purple);
-
-      font-size: 2rem;
-
-      box-shadow: 0 12px 35px rgba(156,141,212,.14);
-    }
-
-    /* =========================================================
-       FOOTER
-    ========================================================= */
-
-    footer {
-      padding: 35px 32px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 20px;
-
-      border-top: 1px solid var(--border);
-
-      background: var(--bg);
-    }
-
-    .footer-logo {
-      font-weight: 700;
-      font-size: .85rem;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 20px;
-    }
-
-    .footer-link {
-      color: var(--text-soft);
-      font-size: .65rem;
-      transition: .2s;
-    }
-
-    .footer-link:hover {
-      color: var(--purple);
-    }
-
-    .footer-copy {
-      color: var(--text-faint);
-      font-family: var(--mono);
-      font-size: .52rem;
-    }
-
-    /* =========================================================
-       REVEAL
-    ========================================================= */
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(22px);
-
-      transition:
-        opacity .65s ease,
-        transform .65s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* =========================================================
-       ANIMATIONS
-    ========================================================= */
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(18px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes floatOrb {
-      0%,100% {
-        transform: translateY(0) scale(1);
-      }
-
-      50% {
-        transform: translateY(-18px) scale(1.04);
-      }
-    }
-
-    @keyframes ticker {
-      from {
-        transform: translateX(0);
-      }
-
-      to {
-        transform: translateX(-50%);
-      }
-    }
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-
-    @media (max-width: 900px) {
-
-      .nav-links .nav-link:nth-child(-n+3) {
-        display: none;
-      }
-
-      .overview-grid,
-      .triage-panel,
-      .portal-grid,
-      .cta-inner {
-        grid-template-columns: 1fr;
-      }
-
-      .overview-side {
-        grid-template-rows: auto;
-      }
-
-      .feature-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .vitals-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .cta-inner {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .cta-mark {
-        display: none;
-      }
-    }
-
-    @media (max-width: 620px) {
-
-      nav {
-        padding: 0 16px;
-      }
-
-      .nav-label,
-      .nav-separator {
-        display: none;
-      }
-
-      .nav-doctor {
-        padding: 7px 11px;
-      }
-
-      .hero {
-        padding-left: 20px;
-        padding-right: 20px;
-      }
-
-      .hero-visual {
-        width: 300px;
-        height: 230px;
-      }
-
-      .hero-terminal {
-        font-size: .48rem;
-        max-width: 90%;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-
-      .section {
-        padding: 75px 20px;
-      }
-
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .vitals-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .workflow-box {
-        padding: 20px;
-      }
-
-      .flow {
-        min-width: 690px;
-      }
-
-      .triage-info,
-      .triage-visual {
-        padding: 25px;
-      }
-
-      .portal {
-        min-height: 230px;
-      }
-
-      footer {
-        padding: 28px 20px;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
-      }
-    }
-  </style>
+  <!-- Three.js for 3D Holographic Heart & AI Nurse Hologram -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body id="top">
 
   <!-- =======================================================
-       NAV
+       CUSTOM ANIMATED MEDICAL CURSOR
+       - Default: Glowing green reticle / cross target
+       - Hover: Expands into pulsing outer ring + bright green dot
   ======================================================== -->
+  <div class="custom-cursor" id="customCursor" aria-hidden="true">
+    <div class="cursor-reticle">
+      <span class="reticle-line reticle-top"></span>
+      <span class="reticle-line reticle-bottom"></span>
+      <span class="reticle-line reticle-left"></span>
+      <span class="reticle-line reticle-right"></span>
+    </div>
+    <div class="cursor-ring"></div>
+    <div class="cursor-dot"></div>
+  </div>
 
+  <!-- =======================================================
+       TOP CLINICAL TELEMETRY STATUS BAR
+  ======================================================== -->
+  <aside class="top-telemetry-bar" aria-label="Clinical Telemetry Status">
+    <div class="telemetry-left">
+      <span class="live-pulse">
+        <span class="pulse-indicator"></span>
+        POINT-OF-CARE TELEMETRY ACTIVE
+      </span>
+      <span>NODE: KL-01 · LATENCY &lt; 42ms</span>
+    </div>
+    <div class="telemetry-tags">
+      <span class="telemetry-tag">HL7 FHIR R4</span>
+      <span class="telemetry-tag">ABDM M1/M2/M3</span>
+      <span class="telemetry-tag">HPR AUTHENTICATED</span>
+      <span class="telemetry-tag">REAL-TIME TRIAGE ENGINE</span>
+    </div>
+  </aside>
+
+  <!-- =======================================================
+       NAVIGATION BAR
+  ======================================================== -->
   <nav>
+    <div class="logo-container">
+      <div class="med-cross-icon">+</div>
+      <a href="#top" class="logo">
+        MediKiosk<span class="logo-dot">.</span>
+      </a>
+    </div>
 
-    <a href="#top" class="logo">
-      MediKiosk<span class="logo-dot">.</span>
-    </a>
-
-    <div class="nav-separator"></div>
-
-    <span class="nav-label">
+    <span class="nav-badge">
       POINT-OF-CARE PLATFORM
     </span>
 
     <div class="nav-links">
-
-      <a href="#features" class="nav-link">
-        Features
-      </a>
-
-      <a href="#workflow" class="nav-link">
-        Workflow
-      </a>
-
-      <a href="#triage" class="nav-link">
-        Triage
-      </a>
-
-      <a
-        href="triage/dashboard/index.html"
-        class="nav-doctor"
-      >
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#nurse" class="nav-link">AI Nurse</a>
+      <a href="#workflow" class="nav-link">Workflow</a>
+      <a href="#triage" class="nav-link">Triage</a>
+      <a href="#vitals" class="nav-link">Vitals</a>
+      <a href="#portals" class="nav-link">Portals</a>
+      <a href="triage/dashboard/index.html" class="nav-doctor">
         Doctor Dashboard →
       </a>
-
     </div>
-
   </nav>
 
-
   <!-- =======================================================
-       HERO
+       HERO SECTION WITH 3D CARDIAC CORE & TELEMETRY WAVES
   ======================================================== -->
-
   <header class="hero">
-
-    <div class="hero-grid"></div>
-
-    <div class="orb one"></div>
-    <div class="orb two"></div>
+    <!-- Continuous Live Animated SVG ECG Telemetry Wave -->
+    <div class="ecg-wave-container">
+      <svg class="ecg-svg-wave" viewBox="0 0 2400 120" preserveAspectRatio="none">
+        <path
+          d="M0,60 L200,60 L220,60 L235,15 L250,105 L265,35 L280,80 L295,60 L600,60 L620,60 L635,15 L650,105 L665,35 L680,80 L695,60 L1000,60 L1200,60 L1400,60 L1420,60 L1435,15 L1450,105 L1465,35 L1480,80 L1495,60 L1800,60 L1820,60 L1835,15 L1850,105 L1865,35 L1880,80 L1895,60 L2400,60"
+          fill="none"
+          stroke="#10b981"
+          stroke-width="2.5"
+        />
+      </svg>
+    </div>
 
     <div class="hero-eyebrow">
       Intelligent Clinical Workflow
@@ -1525,12 +117,34 @@
       point-of-care workflow for patients and doctors.
     </p>
 
-    <div class="hero-visual">
-      <canvas id="heroCanvas"></canvas>
+    <!-- 3D Interactive Hero Canvas (Floating Holographic Medical Heart & Telemetry Rings) -->
+    <div class="hero-3d-wrapper">
+      <div class="hero-3d-container" id="hero3dContainer">
+        <canvas id="heroHeartCanvas"></canvas>
+
+        <!-- Floating Holographic Telemetry HUD Badges -->
+        <div class="hero-hud-badge badge-top-left">
+          <span class="badge-dot-emerald"></span>
+          <span>TRIAGE: ACTIVE SENSING</span>
+        </div>
+
+        <div class="hero-hud-badge badge-top-right">
+          <span class="badge-dot-emerald"></span>
+          <span>3D CARDIAC HOLOGRAPHIC CORE</span>
+        </div>
+
+        <div class="hero-hud-badge badge-bottom-left">
+          <span>SPO2: 99% · PULSE: 72 BPM</span>
+        </div>
+
+        <div class="hero-hud-badge badge-bottom-right">
+          <span>MOUSE PARALLAX LOOKAT ACTIVE</span>
+        </div>
+      </div>
     </div>
 
+    <!-- Hero Actions (Links kept strictly the same) -->
     <div class="hero-actions">
-
       <a
         href="/patientTerminal/dist/index.html"
         class="btn btn-primary"
@@ -1544,9 +158,9 @@
       >
         Open Doctor Dashboard
       </a>
-
     </div>
 
+    <!-- Hero Terminal Pipeline -->
     <div class="hero-terminal">
       <span>INPUT</span>
       symptoms + questionnaire + vitals
@@ -1555,111 +169,38 @@
       &nbsp;→&nbsp;
       <span>CLINICAL REVIEW</span>
     </div>
-
   </header>
-
 
   <!-- =======================================================
        TICKER
   ======================================================== -->
-
   <div class="ticker">
-
     <div class="ticker-track">
+      <div class="ticker-item"><span class="ticker-dot"></span>Patient Kiosk</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>SOCRATES Assessment</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Red-Flag Detection</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Vital Monitoring</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Real-Time Triage</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Doctor Dashboard</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Structured Events</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Clinical Workflow</div>
 
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Patient Kiosk
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        SOCRATES Assessment
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Red-Flag Detection
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Vital Monitoring
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Real-Time Triage
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Doctor Dashboard
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Structured Events
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Clinical Workflow
-      </div>
-
-      <!-- duplicate -->
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Patient Kiosk
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        SOCRATES Assessment
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Red-Flag Detection
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Vital Monitoring
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Real-Time Triage
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Doctor Dashboard
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Structured Events
-      </div>
-
-      <div class="ticker-item">
-        <span class="ticker-dot"></span>
-        Clinical Workflow
-      </div>
-
+      <!-- Duplicate for infinite seamless marquee -->
+      <div class="ticker-item"><span class="ticker-dot"></span>Patient Kiosk</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>SOCRATES Assessment</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Red-Flag Detection</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Vital Monitoring</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Real-Time Triage</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Doctor Dashboard</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Structured Events</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Clinical Workflow</div>
     </div>
-
   </div>
 
-
   <!-- =======================================================
-       PLATFORM OVERVIEW
+       PLATFORM OVERVIEW WITH 3D TILT CARDS
   ======================================================== -->
-
   <section class="section overview" id="overview">
-
     <div class="section-eyebrow reveal">
       — The Platform
     </div>
@@ -1675,11 +216,8 @@
       triage context to the clinical team.
     </p>
 
-
     <div class="overview-grid">
-
-      <article class="overview-card large reveal">
-
+      <article class="tilt-card overview-card large reveal">
         <div class="card-label">
           <span class="status-dot"></span>
           Real-time clinical workflow
@@ -1695,309 +233,229 @@
           engine evaluates those events and produces an
           Emergency, Urgent or Routine workflow state.
         </p>
-
       </article>
 
-
       <div class="overview-side">
-
-        <article class="mini-card reveal">
-
-          <div class="mini-icon">
-            +
-          </div>
-
-          <h3 class="mini-title">
-            Structured Assessment
-          </h3>
-
+        <article class="tilt-card mini-card reveal">
+          <div class="mini-icon">+</div>
+          <h3 class="mini-title">Structured Assessment</h3>
           <p class="mini-text">
             Guided symptom and questionnaire collection keeps
             important patient information organized.
           </p>
-
         </article>
 
-
-        <article class="mini-card reveal">
-
-          <div class="mini-icon">
-            →
-          </div>
-
-          <h3 class="mini-title">
-            Clinical Handoff
-          </h3>
-
+        <article class="tilt-card mini-card reveal">
+          <div class="mini-icon">→</div>
+          <h3 class="mini-title">Clinical Handoff</h3>
           <p class="mini-text">
             Triage context and relevant patient information move
             directly into the doctor-facing workflow.
           </p>
-
         </article>
-
       </div>
-
     </div>
-
   </section>
 
+  <!-- =======================================================
+       AI NURSE ASSISTANT (3D HOLOGRAPHIC NURSE AVATAR)
+  ======================================================== -->
+  <section class="section ai-nurse-section" id="nurse">
+    <div class="section-eyebrow reveal">
+      — Clinical Intelligence
+    </div>
 
-<!-- =======================================================
-     CORE FEATURES
-======================================================== -->
+    <h2 class="section-title reveal">
+      AI Nurse Assistant at the
+      <strong>point of care.</strong>
+    </h2>
 
-<section class="section features" id="features">
+    <p class="section-description reveal">
+      A conversational first point of contact that guides patients through symptom collection,
+      asks relevant follow-up questions and helps structure the information needed for clinical assessment.
+    </p>
 
-  <div class="section-eyebrow reveal">
-    — Core Capabilities
-  </div>
+    <!-- 3D Holographic AI Nurse Assistant Showcase -->
+    <div class="ai-nurse-showcase reveal">
+      <div class="ai-nurse-content">
+        <div class="card-label" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border-color: rgba(16, 185, 129, 0.35);">
+          <span class="badge-dot-emerald"></span>
+          3D Interactive Holographic Companion
+        </div>
 
-  <h2 class="section-title reveal">
-    An intelligent assistant at the
-    <strong>point of care.</strong>
-  </h2>
+        <h3 class="ai-nurse-title">
+          AI Nurse Assistant
+        </h3>
 
-  <p class="section-description reveal">
-    MediKiosk combines an AI Nurse Assistant with structured
-    assessment, real-time triage and clinical review to guide
-    the patient journey from first interaction to doctor.
-  </p>
+        <p class="ai-nurse-desc">
+          A conversational first point of contact that guides
+          patients through symptom collection, asks relevant
+          follow-up questions and helps structure the information
+          needed for clinical assessment.
+        </p>
 
-  <div class="feature-grid">
+        <!-- Interactive Speech Bubble -->
+        <div class="nurse-chat-bubble">
+          <div class="nurse-chat-author">
+            <span class="status-dot"></span>
+            AI Nurse Companion · Live Telemetry
+          </div>
+          <div class="nurse-chat-msg" id="nurseChatMsg">
+            "Hello! I am your AI Point-of-Care assistant. Please share your symptoms or begin vitals capture below."
+          </div>
+        </div>
 
-    <!-- AI NURSE — PRIMARY FEATURE -->
+        <!-- Quick Action Prompt Triggers -->
+        <div class="nurse-quick-actions">
+          <button class="nurse-action-pill" data-action="triage">✦ Check Triage Priority</button>
+          <button class="nurse-action-pill" data-action="chest">♥ Assess Chest Discomfort</button>
+          <button class="nurse-action-pill" data-action="home">📶 Sync Home Vitals</button>
+        </div>
 
-    <article class="feature-card ai-nurse reveal">
-
-      <div class="feature-icon">
-        ✦
+        <span class="feature-code" style="background: rgba(16, 185, 129, 0.2); color: #34d399; margin-top: 24px; border-color: rgba(16, 185, 129, 0.35);">
+          PATIENT ↔ AI NURSE
+        </span>
       </div>
 
-      <h3 class="feature-title">
-        AI Nurse Assistant
-      </h3>
-
-      <p class="feature-text">
-        A conversational first point of contact that guides
-        patients through symptom collection, asks relevant
-        follow-up questions and helps structure the information
-        needed for clinical assessment.
-      </p>
-
-      <span class="feature-code">
-        PATIENT ↔ AI NURSE
-      </span>
-
-    </article>
-
-
-    <!-- PATIENT KIOSK -->
-
-    <article class="feature-card reveal">
-
-      <div class="feature-icon">
-        +
+      <!-- 3D Holographic Nurse Model with Eye-Tracking and Hover 360 Spin -->
+      <div class="ai-nurse-canvas-box">
+        <canvas id="nurseHoloCanvas"></canvas>
+        <span class="nurse-hover-hint">Hover / Click to Trigger 360° Rotation</span>
       </div>
-
-      <h3 class="feature-title">
-        Patient Kiosk
-      </h3>
-
-      <p class="feature-text">
-        A guided point-of-care interface for collecting symptoms,
-        medical information, questionnaire responses and available
-        vital readings.
-      </p>
-
-      <span class="feature-code">
-        STRUCTURED INTAKE
-      </span>
-
-    </article>
-
-
-    <!-- SOCRATES -->
-
-    <article class="feature-card reveal">
-
-      <div class="feature-icon">
-        ◌
-      </div>
-
-      <h3 class="feature-title">
-        SOCRATES Assessment
-      </h3>
-
-      <p class="feature-text">
-        Structured symptom assessment covering site, onset,
-        character, radiation, severity, timing and associated
-        symptoms.
-      </p>
-
-      <span class="feature-code">
-        SEVERITY 0–10
-      </span>
-
-    </article>
-
-
-    <!-- RED FLAGS -->
-
-    <article class="feature-card red reveal">
-
-      <div class="feature-icon">
-        !
-      </div>
-
-      <h3 class="feature-title">
-        Red-Flag Detection
-      </h3>
-
-      <p class="feature-text">
-        Patient responses, symptoms and readings can be evaluated
-        for signals that require higher-priority clinical attention.
-      </p>
-
-      <span class="feature-code">
-        RISK SIGNALS
-      </span>
-
-    </article>
-
-
-    <!-- VITALS -->
-
-    <article class="feature-card blue reveal">
-
-      <div class="feature-icon">
-        ♥
-      </div>
-
-      <h3 class="feature-title">
-        Vital Monitoring
-      </h3>
-
-      <p class="feature-text">
-        Structured readings including heart rate, blood pressure,
-        SpO₂, temperature, respiratory rate and blood glucose.
-      </p>
-
-      <span class="feature-code">
-        VITAL EVENTS
-      </span>
-
-    </article>
-
-
-    <!-- QUESTIONNAIRE -->
-
-    <article class="feature-card reveal">
-
-      <div class="feature-icon">
-        ◇
-      </div>
-
-      <h3 class="feature-title">
-        Smart Questionnaires
-      </h3>
-
-      <p class="feature-text">
-        Guided questioning across red-flag screening,
-        cardiovascular, respiratory, neurological, trauma,
-        medication and medical history.
-      </p>
-
-      <span class="feature-code">
-        ADAPTIVE INPUT
-      </span>
-
-    </article>
-
-
-    <!-- TRIAGE -->
-
-    <article class="feature-card red reveal">
-
-      <div class="feature-icon">
-        ↗
-      </div>
-
-      <h3 class="feature-title">
-        Real-Time Triage Engine
-      </h3>
-
-      <p class="feature-text">
-        Structured patient events are validated and evaluated
-        to produce Emergency, Urgent or Routine workflow states.
-      </p>
-
-      <span class="feature-code">
-        EVENT → RULES → TRIAGE
-      </span>
-
-    </article>
-
-
-    <!-- DOCTOR -->
-
-    <article class="feature-card green reveal">
-
-      <div class="feature-icon">
-        ✓
-      </div>
-
-      <h3 class="feature-title">
-        Doctor Dashboard
-      </h3>
-
-      <p class="feature-text">
-        Gives clinicians the patient context, triage state,
-        vital information and priority workflow needed for review.
-      </p>
-
-      <span class="feature-code">
-        CLINICAL REVIEW
-      </span>
-
-    </article>
-
-
-    <!-- AUDIT -->
-
-    <article class="feature-card reveal">
-
-      <div class="feature-icon">
-        ≡
-      </div>
-
-      <h3 class="feature-title">
-        Event Traceability
-      </h3>
-
-      <p class="feature-text">
-        Patient interactions and contributing events remain
-        structured so the resulting triage context can be traced
-        through the workflow.
-      </p>
-
-      <span class="feature-code">
-        AUDIT CONTEXT
-      </span>
-
-    </article>
-
-  </div>
-
-</section>
-
+    </div>
+  </section>
 
   <!-- =======================================================
-       TRIAGE
+       CORE CAPABILITIES (FEATURES GRID)
   ======================================================== -->
+  <section class="section features" id="features">
+    <div class="section-eyebrow reveal">
+      — Core Capabilities
+    </div>
 
+    <h2 class="section-title reveal">
+      An intelligent assistant at the
+      <strong>point of care.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk combines an AI Nurse Assistant with structured
+      assessment, real-time triage and clinical review to guide
+      the patient journey from first interaction to doctor.
+    </p>
+
+    <div class="feature-grid">
+      <!-- PATIENT KIOSK -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">+</div>
+        <h3 class="feature-title">Patient Kiosk</h3>
+        <p class="feature-text">
+          A guided point-of-care interface for collecting symptoms,
+          medical information, questionnaire responses and available
+          vital readings.
+        </p>
+        <span class="feature-code">STRUCTURED INTAKE</span>
+      </article>
+
+      <!-- SOCRATES -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">◌</div>
+        <h3 class="feature-title">SOCRATES Assessment</h3>
+        <p class="feature-text">
+          Structured symptom assessment covering site, onset,
+          character, radiation, severity, timing and associated
+          symptoms.
+        </p>
+        <span class="feature-code">SEVERITY 0–10</span>
+      </article>
+
+      <!-- RED FLAGS -->
+      <article class="tilt-card feature-card red reveal">
+        <div class="feature-icon">!</div>
+        <h3 class="feature-title">Red-Flag Detection</h3>
+        <p class="feature-text">
+          Patient responses, symptoms and readings can be evaluated
+          for signals that require higher-priority clinical attention.
+        </p>
+        <span class="feature-code">RISK SIGNALS</span>
+      </article>
+
+      <!-- VITALS -->
+      <article class="tilt-card feature-card blue reveal">
+        <div class="feature-icon">♥</div>
+        <h3 class="feature-title">Vital Monitoring</h3>
+        <p class="feature-text">
+          Structured readings including heart rate, blood pressure,
+          SpO₂, temperature, respiratory rate and blood glucose.
+        </p>
+        <span class="feature-code">VITAL EVENTS</span>
+      </article>
+
+      <!-- QUESTIONNAIRE -->
+      <article class="tilt-card feature-card amber reveal">
+        <div class="feature-icon">◇</div>
+        <h3 class="feature-title">Smart Questionnaires</h3>
+        <p class="feature-text">
+          Guided questioning across red-flag screening,
+          cardiovascular, respiratory, neurological, trauma,
+          medication and medical history.
+        </p>
+        <span class="feature-code">ADAPTIVE INPUT</span>
+      </article>
+
+      <!-- TRIAGE -->
+      <article class="tilt-card feature-card red reveal">
+        <div class="feature-icon">↗</div>
+        <h3 class="feature-title">Real-Time Triage Engine</h3>
+        <p class="feature-text">
+          Structured patient events are validated and evaluated
+          to produce Emergency, Urgent or Routine workflow states.
+        </p>
+        <span class="feature-code">EVENT → RULES → TRIAGE</span>
+      </article>
+
+      <!-- DOCTOR -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">✓</div>
+        <h3 class="feature-title">Doctor Dashboard</h3>
+        <p class="feature-text">
+          Gives clinicians the patient context, triage state,
+          vital information and priority workflow needed for review.
+        </p>
+        <span class="feature-code">CLINICAL REVIEW</span>
+      </article>
+
+      <!-- AUDIT -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">≡</div>
+        <h3 class="feature-title">Event Traceability</h3>
+        <p class="feature-text">
+          Patient interactions and contributing events remain
+          structured so the resulting triage context can be traced
+          through the workflow.
+        </p>
+        <span class="feature-code">AUDIT CONTEXT</span>
+      </article>
+
+      <!-- AI NURSE SUMMARY CARD -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">✦</div>
+        <h3 class="feature-title">AI Nurse Assistant</h3>
+        <p class="feature-text">
+          A conversational first point of contact that guides
+          patients through symptom collection, asks relevant
+          follow-up questions and helps structure the information
+          needed for clinical assessment.
+        </p>
+        <span class="feature-code">PATIENT ↔ AI NURSE</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       TRIAGE ENGINE & 3D INTERACTIVE PRIORITY NODES
+  ======================================================== -->
   <section class="section triage" id="triage">
-
     <div class="section-eyebrow reveal">
       — Triage Engine
     </div>
@@ -2012,18 +470,14 @@
       to organize cases into workflow priorities for clinical review.
     </p>
 
-
     <div class="triage-panel reveal">
-
       <div class="triage-info">
-
         <div class="card-label">
           <span class="status-dot"></span>
           Event-driven processing
         </div>
 
         <div class="triage-flow">
-
           <div class="triage-step">
             <span class="triage-step-number">01</span>
             <span>Patient symptoms and answers collected</span>
@@ -2043,101 +497,54 @@
             <span class="triage-step-number">04</span>
             <span>Triage result is surfaced for clinical review</span>
           </div>
-
         </div>
-
       </div>
 
-
+      <!-- 3D Interactive Priority Nodes -->
       <div class="triage-visual">
-
-        <div class="triage-level">
-
+        <!-- EMERGENCY -->
+        <div class="triage-level level-emergency">
           <div class="triage-left">
-
             <span class="triage-marker emergency"></span>
-
             <div>
-              <div class="triage-name">
-                EMERGENCY
-              </div>
-
-              <div class="triage-desc">
-                Immediate doctor alert / emergency workflow
-              </div>
+              <div class="triage-name">EMERGENCY</div>
+              <div class="triage-desc">Immediate doctor alert / emergency workflow</div>
             </div>
-
           </div>
-
-          <span class="triage-action">
-            PRIORITY 01
-          </span>
-
+          <span class="triage-action" style="color: #ef4444; background: #fef2f2;">PRIORITY 01</span>
         </div>
 
-
-        <div class="triage-level">
-
+        <!-- URGENT -->
+        <div class="triage-level level-urgent">
           <div class="triage-left">
-
             <span class="triage-marker urgent"></span>
-
             <div>
-              <div class="triage-name">
-                URGENT
-              </div>
-
-              <div class="triage-desc">
-                Priority clinical review
-              </div>
+              <div class="triage-name">URGENT</div>
+              <div class="triage-desc">Priority clinical review</div>
             </div>
-
           </div>
-
-          <span class="triage-action">
-            PRIORITY 02
-          </span>
-
+          <span class="triage-action" style="color: #f59e0b; background: #fffbeb;">PRIORITY 02</span>
         </div>
 
-
-        <div class="triage-level">
-
+        <!-- ROUTINE -->
+        <div class="triage-level level-routine">
           <div class="triage-left">
-
             <span class="triage-marker routine"></span>
-
             <div>
-              <div class="triage-name">
-                ROUTINE
-              </div>
-
-              <div class="triage-desc">
-                Standard clinical queue
-              </div>
+              <div class="triage-name">ROUTINE</div>
+              <div class="triage-desc">Standard clinical queue</div>
             </div>
-
           </div>
-
-          <span class="triage-action">
-            PRIORITY 03
-          </span>
-
+          <span class="triage-action" style="color: #10b981; background: #ecfdf5;">PRIORITY 03</span>
         </div>
-
       </div>
-
     </div>
-
   </section>
 
-
   <!-- =======================================================
-       WORKFLOW
+       SYSTEM WORKFLOW
   ======================================================== -->
-
   <section class="section workflow" id="workflow">
-
     <div class="section-eyebrow reveal">
       — System Flow
     </div>
@@ -2152,64 +559,50 @@
       from the patient kiosk toward the clinical dashboard.
     </p>
 
-
     <div class="workflow-box reveal">
-
       <div class="flow">
-
         <div class="flow-node">
           <strong>PATIENT</strong>
           <span>symptoms</span>
         </div>
-
         <div class="flow-arrow">→</div>
 
         <div class="flow-node">
           <strong>QUESTIONNAIRE</strong>
           <span>answers</span>
         </div>
-
         <div class="flow-arrow">→</div>
 
         <div class="flow-node">
           <strong>VITALS</strong>
           <span>readings</span>
         </div>
-
         <div class="flow-arrow">→</div>
 
         <div class="flow-node">
           <strong>EVENT</strong>
           <span>validated</span>
         </div>
-
         <div class="flow-arrow">→</div>
 
         <div class="flow-node">
           <strong>TRIAGE</strong>
           <span>rules</span>
         </div>
-
         <div class="flow-arrow">→</div>
 
         <div class="flow-node">
           <strong>DOCTOR</strong>
           <span>review</span>
         </div>
-
       </div>
-
     </div>
-
   </section>
 
-
   <!-- =======================================================
-       VITALS
+       VITALS MONITORING WITH 3D ELASTIC METALLIC SYMBOLS
   ======================================================== -->
-
   <section class="section vitals" id="vitals">
-
     <div class="section-eyebrow reveal">
       — Vital Monitoring
     </div>
@@ -2224,56 +617,50 @@
       the patient assessment workflow.
     </p>
 
-
+    <!-- 6 Vital Cards with 3D Elastic Physics on Hover -->
     <div class="vitals-grid">
-
-      <div class="vital reveal">
-        <div class="vital-symbol">♥</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">♥</div>
         <div class="vital-name">Heart Rate</div>
         <div class="vital-code">BPM</div>
       </div>
 
-      <div class="vital reveal">
-        <div class="vital-symbol">⌁</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">⌁</div>
         <div class="vital-name">Blood Pressure</div>
         <div class="vital-code">SYS / DIA</div>
       </div>
 
-      <div class="vital reveal">
-        <div class="vital-symbol">O₂</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">O₂</div>
         <div class="vital-name">SpO₂</div>
         <div class="vital-code">%</div>
       </div>
 
-      <div class="vital reveal">
-        <div class="vital-symbol">°</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">°</div>
         <div class="vital-name">Temperature</div>
         <div class="vital-code">°C</div>
       </div>
 
-      <div class="vital reveal">
-        <div class="vital-symbol">↕</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">↕</div>
         <div class="vital-name">Respiratory Rate</div>
         <div class="vital-code">/ MIN</div>
       </div>
 
-      <div class="vital reveal">
-        <div class="vital-symbol">◈</div>
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">◈</div>
         <div class="vital-name">Blood Glucose</div>
         <div class="vital-code">MG/DL</div>
       </div>
-
     </div>
-
   </section>
-
 
   <!-- =======================================================
        PORTALS
   ======================================================== -->
-
   <section class="section portals" id="portals">
-
     <div class="section-eyebrow reveal">
       — Access
     </div>
@@ -2288,119 +675,65 @@
       receive the resulting clinical workflow in the dashboard.
     </p>
 
-
     <div class="portal-grid">
-
-      <!-- PATIENT -->
-
-      <article class="portal patient reveal">
-
-        <div class="portal-label">
-          Patient Portal
-        </div>
-
-        <h3 class="portal-title">
-          Start your assessment.
-        </h3>
-
+      <!-- PATIENT PORTAL -->
+      <article class="tilt-card portal patient reveal">
+        <div class="portal-label">Patient Portal</div>
+        <h3 class="portal-title">Start your assessment.</h3>
         <p class="portal-text">
           Enter symptoms, answer guided questions and provide
           available vital information through the MediKiosk
           patient experience.
         </p>
-
-        <a
-          href="/patientTerminal/dist/index.html"
-          class="portal-btn"
-        >
+        <a href="/patientTerminal/dist/index.html" class="portal-btn">
           Open Patient Kiosk →
         </a>
-
         <div class="portal-bg"></div>
-
       </article>
 
-
-      <!-- DOCTOR -->
-
-      <article class="portal doctor reveal">
-
-        <div class="portal-label">
-          Doctor Portal
-        </div>
-
-        <h3 class="portal-title">
-          Review the clinical queue.
-        </h3>
-
+      <!-- DOCTOR PORTAL -->
+      <article class="tilt-card portal doctor reveal">
+        <div class="portal-label">Doctor Portal</div>
+        <h3 class="portal-title">Review the clinical queue.</h3>
         <p class="portal-text">
           View incoming encounters, triage states, patient
           context and priority information through the
           doctor-facing dashboard.
         </p>
-
-        <a
-          href="/dashboard/index.html"
-          class="portal-btn"
-        >
+        <a href="/dashboard/index.html" class="portal-btn">
           Open Doctor Dashboard →
         </a>
-
         <div class="portal-bg"></div>
-
       </article>
 
       <!-- HOME CARE COMPANION (NODE 2) -->
-      <article class="portal reveal" style="border-top: 3px solid #10b981;">
-
+      <article class="tilt-card portal home-care reveal">
         <div class="portal-label" style="color: #059669; font-weight: 700;">
           Node 2 — Home Care Hub
         </div>
-
-        <h3 class="portal-title">
-          Personal Home Station & RPM
-        </h3>
-
+        <h3 class="portal-title">Personal Home Station &amp; RPM</h3>
         <p class="portal-text">
           Daily vitals capture via Home ESP32-CAM (192.168.137.101), medicine reminder adherence tracking, and live telemetry to doctor.
         </p>
-
-        <a
-          href="/home-patient"
-          class="portal-btn"
-          style="background: #059669; color: #ffffff;"
-        >
+        <a href="/home-patient" class="portal-btn">
           Open Home Patient Hub →
         </a>
-
         <div class="portal-bg"></div>
-
       </article>
-
     </div>
-
   </section>
 
-
   <!-- =======================================================
-       CTA
+       FINAL CALL TO ACTION
   ======================================================== -->
-
   <section class="cta">
-
     <div class="cta-inner">
-
       <div>
-
-        <div class="section-eyebrow">
-          — Get started
-        </div>
-
+        <div class="section-eyebrow">— Get started</div>
         <h2 class="cta-title">
           Connect the first interaction
           <strong>to clinical review.</strong>
         </h2>
-
         <p class="cta-text">
           MediKiosk brings patient intake, structured assessment,
           triage and doctor review together in a single point-of-care
@@ -2408,442 +741,46 @@
         </p>
 
         <div class="cta-actions">
-
-          <a
-            href="/patientTerminal/dist/index.html"
-            class="btn btn-primary"
-          >
+          <a href="/patientTerminal/dist/index.html" class="btn btn-primary">
             Start Patient Kiosk →
           </a>
-
-          <a
-            href="/dashboard/index.html"
-            class="btn btn-secondary"
-          >
+          <a href="/dashboard/index.html" class="btn btn-secondary">
             Doctor Dashboard
           </a>
-
         </div>
-
       </div>
-
 
       <div class="cta-mark">
-
-        <div class="cta-mark-inner">
-          +
-        </div>
-
+        <div class="cta-mark-inner">+</div>
       </div>
-
     </div>
-
   </section>
-
 
   <!-- =======================================================
        FOOTER
   ======================================================== -->
-
   <footer>
-
     <div class="footer-logo">
+      <div class="med-cross-icon" style="width: 26px; height: 26px; font-size: 1rem;">+</div>
       MediKiosk<span class="logo-dot">.</span>
     </div>
 
     <div class="footer-links">
-
-      <a href="#features" class="footer-link">
-        Features
-      </a>
-
-      <a href="#triage" class="footer-link">
-        Triage
-      </a>
-
-      <a href="#workflow" class="footer-link">
-        Workflow
-      </a>
-
-      <a href="#portals" class="footer-link">
-        Portals
-      </a>
-
+      <a href="#features" class="footer-link">Features</a>
+      <a href="#nurse" class="footer-link">AI Nurse</a>
+      <a href="#triage" class="footer-link">Triage</a>
+      <a href="#workflow" class="footer-link">Workflow</a>
+      <a href="#vitals" class="footer-link">Vitals</a>
+      <a href="#portals" class="footer-link">Portals</a>
     </div>
 
     <div class="footer-copy">
-      MEDIKIOSK · POINT-OF-CARE TRIAGE PLATFORM
+      MEDIKIOSK · POINT-OF-CARE TRIAGE PLATFORM · HL7 FHIR R4
     </div>
-
   </footer>
 
-
-  <!-- =======================================================
-       THREE.JS — LIGHTWEIGHT HERO VISUAL
-  ======================================================== -->
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-  <script>
-    (() => {
-
-      const canvas = document.getElementById("heroCanvas");
-
-      if (!canvas || !window.THREE) return;
-
-      const container = canvas.parentElement;
-
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true
-      });
-
-      renderer.setPixelRatio(
-        Math.min(window.devicePixelRatio, 2)
-      );
-
-      renderer.setSize(width, height);
-
-      const scene = new THREE.Scene();
-
-      const camera = new THREE.PerspectiveCamera(
-        38,
-        width / height,
-        0.1,
-        100
-      );
-
-      camera.position.set(0, 0, 5.5);
-
-
-      /* Lighting */
-
-      scene.add(
-        new THREE.AmbientLight(
-          0xffffff,
-          .55
-        )
-      );
-
-      const light = new THREE.PointLight(
-        0x9c8dd4,
-        2.2,
-        12
-      );
-
-      light.position.set(-3, 3, 4);
-
-      scene.add(light);
-
-
-      /* Main object */
-
-      const group = new THREE.Group();
-
-      scene.add(group);
-
-
-      const core = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.05, 1),
-        new THREE.MeshPhysicalMaterial({
-          color: 0x9c8dd4,
-          metalness: .15,
-          roughness: .1,
-          transmission: .35,
-          transparent: true,
-          opacity: .88,
-          clearcoat: 1
-        })
-      );
-
-      group.add(core);
-
-
-      /* Wire shell */
-
-      const shell = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.17, 1),
-        new THREE.MeshBasicMaterial({
-          color: 0xc9c0ee,
-          wireframe: true,
-          transparent: true,
-          opacity: .17
-        })
-      );
-
-      group.add(shell);
-
-
-      /* Orbit rings */
-
-      const ringMaterial =
-        new THREE.MeshBasicMaterial({
-          color: 0xb9aceb,
-          transparent: true,
-          opacity: .5
-        });
-
-
-      const ring1 = new THREE.Mesh(
-        new THREE.TorusGeometry(
-          1.55,
-          .025,
-          12,
-          80
-        ),
-        ringMaterial
-      );
-
-      ring1.rotation.x = Math.PI / 2.6;
-
-      group.add(ring1);
-
-
-      const ring2 = new THREE.Mesh(
-        new THREE.TorusGeometry(
-          1.82,
-          .018,
-          12,
-          80
-        ),
-        new THREE.MeshBasicMaterial({
-          color: 0x9c8dd4,
-          transparent: true,
-          opacity: .22
-        })
-      );
-
-      ring2.rotation.y = Math.PI / 3;
-
-      group.add(ring2);
-
-
-      /* Small orbiting points */
-
-      const pointMaterial =
-        new THREE.MeshBasicMaterial({
-          color: 0xe8e2ff
-        });
-
-      const pointGeometry =
-        new THREE.SphereGeometry(
-          .075,
-          12,
-          12
-        );
-
-      const points = [];
-
-      for (let i = 0; i < 3; i++) {
-
-        const point =
-          new THREE.Mesh(
-            pointGeometry,
-            pointMaterial
-          );
-
-        group.add(point);
-
-        points.push({
-          mesh: point,
-          offset: i * 2.1
-        });
-      }
-
-
-      /* Animation */
-
-      const clock = new THREE.Clock();
-
-      function animate() {
-
-        requestAnimationFrame(animate);
-
-        const t =
-          clock.getElapsedTime();
-
-        core.rotation.x =
-          t * .18;
-
-        core.rotation.y =
-          t * .28;
-
-        shell.rotation.x =
-          -t * .12;
-
-        shell.rotation.y =
-          -t * .2;
-
-        ring1.rotation.z =
-          t * .18;
-
-        ring2.rotation.x =
-          t * .13;
-
-        group.position.y =
-          Math.sin(t * .7) * .08;
-
-
-        points.forEach((item, index) => {
-
-          const angle =
-            t * (.65 + index * .08)
-            + item.offset;
-
-          item.mesh.position.set(
-            Math.cos(angle) * 1.72,
-            Math.sin(t * .8 + index) * .35,
-            Math.sin(angle) * 1.72
-          );
-
-        });
-
-
-        renderer.render(
-          scene,
-          camera
-        );
-      }
-
-      animate();
-
-
-      /* Resize */
-
-      window.addEventListener(
-        "resize",
-        () => {
-
-          const w =
-            container.clientWidth;
-
-          const h =
-            container.clientHeight;
-
-          camera.aspect =
-            w / h;
-
-          camera.updateProjectionMatrix();
-
-          renderer.setSize(
-            w,
-            h
-          );
-        }
-      );
-
-    })();
-
-
-    /* =========================================================
-       SCROLL REVEAL
-    ========================================================= */
-
-    (() => {
-
-      const elements =
-        document.querySelectorAll(
-          ".reveal"
-        );
-
-      if (
-        !("IntersectionObserver" in window)
-      ) {
-
-        elements.forEach(
-          element =>
-            element.classList.add(
-              "visible"
-            )
-        );
-
-        return;
-      }
-
-
-      const observer =
-        new IntersectionObserver(
-          entries => {
-
-            entries.forEach(
-              entry => {
-
-                if (
-                  entry.isIntersecting
-                ) {
-
-                  entry.target.classList.add(
-                    "visible"
-                  );
-
-                  observer.unobserve(
-                    entry.target
-                  );
-
-                }
-
-              }
-            );
-
-          },
-          {
-            threshold: .12
-          }
-        );
-
-
-      elements.forEach(
-        element =>
-          observer.observe(element)
-      );
-
-    })();
-
-
-    /* =========================================================
-       SAFE INTERNAL LINK HANDLING
-    ========================================================= */
-
-    document.querySelectorAll(
-      'a[href^="#"]'
-    ).forEach(link => {
-
-      link.addEventListener(
-        "click",
-        event => {
-
-          const targetId =
-            link.getAttribute("href");
-
-          if (
-            !targetId ||
-            targetId === "#"
-          ) return;
-
-          const target =
-            document.querySelector(
-              targetId
-            );
-
-          if (!target) return;
-
-          event.preventDefault();
-
-          target.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-
-        }
-      );
-
-    });
-
-  </script>
+  <!-- External JavaScript -->
+  <script src="script.js"></script>
 
 </body>
 </html>
