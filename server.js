@@ -59,6 +59,9 @@ app.get(['/patient-terminal', '/terminal'], (req, res) => {
 app.get(['/home-patient', '/home-care', '/personal-device'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'homePatient.html'));
 });
+app.get(['/landing', '/landingPage.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'landingPage.html'));
+});
 
 // LifeLine 360 — Home Care & Remote Patient Monitoring (RPM)
 app.use('/api/v1/patient', medicationRoutes.router);
@@ -476,6 +479,7 @@ if (require.main === module) {
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`=======================================================`);
     console.log(` MediKiosk Unified Server running on port ${PORT}`);
+    console.log(` Landing Page: http://localhost:${PORT}/index.html`);
     console.log(` Patient Intake Kiosk: http://localhost:${PORT}/kiosk.html`);
     console.log(` Doctor Command Center: http://localhost:${PORT}/dashboard/index.html`);
     console.log(` Socket.IO Gateway Active`);
