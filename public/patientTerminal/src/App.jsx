@@ -49,8 +49,9 @@ function App() {
 
   // Fetch facility altitude config from backend
   useEffect(() => {
-    const configUrl = (window.location.hostname === 'localhost' && window.location.port === '5173')
-      ? 'http://localhost:4000/api/v1/facility/config'
+    const backendHost = window.location.hostname || 'localhost';
+    const configUrl = (window.location.port === '5173')
+      ? `http://${backendHost}:4000/api/v1/facility/config`
       : '/api/v1/facility/config';
     fetch(configUrl)
       .then(res => res.json())
@@ -367,8 +368,9 @@ function App() {
     };
 
     try {
-      const apiUrl = (window.location.hostname === 'localhost' && window.location.port === '5173')
-        ? 'http://localhost:4000/api/patient/submit'
+      const backendHost = window.location.hostname || 'localhost';
+      const apiUrl = (window.location.port === '5173')
+        ? `http://${backendHost}:4000/api/patient/submit`
         : '/api/patient/submit';
 
       const response = await fetch(apiUrl, {
@@ -378,30 +380,33 @@ function App() {
       });
 
       const result = await response.json();
-      if (result.success) {
-        alert('Registration complete! Please proceed to the waiting area.');
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to submit clinical intake record.");
       }
-      setSubmitted(true);
+
+      setSubmitSuccess(true);
     } catch (err) {
-      console.error('Error submitting patient data:', err);
-      alert('Registration complete! Please proceed to the waiting area.');
-      setSubmitted(true);
+      console.error("Submission failed:", err);
+      setSubmitError(err.message || "Network error. Please inform hospital attendant.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDocumentUpload = async (e) => {
+  // Automated OCR Extraction handler
+  const handleOcrUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setDocumentName(file.name);
     setOcrLoading(true);
-    setOcrError("");
+    setOcrError(null);
 
     const formData = new FormData();
     formData.append("document", file);
 
-    const ocrUrl = (window.location.hostname === 'localhost' && window.location.port === '5173')
-      ? 'http://localhost:4000/api/v1/ocr'
+    const backendHost = window.location.hostname || 'localhost';
+    const ocrUrl = (window.location.port === '5173')
+      ? `http://${backendHost}:4000/api/v1/ocr`
       : '/api/v1/ocr';
 
     try {
@@ -485,7 +490,7 @@ function App() {
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <a
-          href="http://localhost:4000"
+          href={`http://${window.location.hostname || 'localhost'}:4000`}
           className="portal-exit-link"
           style={{
             color: "#168f91",
@@ -1631,7 +1636,7 @@ function App() {
                   📋 View Final Report
                 </button>
                 <button
-                  onClick={() => window.open("http://localhost:3000", "_blank", "width=800,height=900")}
+                  onClick={() => window.open(`http://${window.location.hostname || 'localhost'}:3000`, "_blank", "width=800,height=900")}
                   style={{
                     background: "rgba(255, 255, 255, 0.2)",
                     border: "none",
@@ -1665,7 +1670,7 @@ function App() {
 
             {/* Embedded Standalone Nova Assistant App */}
             <iframe
-              src={`http://localhost:3000?step=${step}&session_id=${scannerSessionId}`}
+              src={`http://${window.location.hostname || 'localhost'}:3000?step=${step}&session_id=${scannerSessionId}`}
               title="NOVA Virtual Health Assistant"
               style={{
                 flex: 1,

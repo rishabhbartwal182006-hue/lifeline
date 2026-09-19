@@ -133,7 +133,7 @@
           </div>
 
           <!-- Action Button -->
-          <a href="http://localhost:5173" class="w-full py-3 bg-[#3275f8] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+          <a href="#" onclick="event.preventDefault(); window.location.href = 'http://' + (window.location.hostname || 'localhost') + ':5173';" id="linkHospitalKiosk" class="w-full py-3 bg-[#3275f8] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
             Launch Hospital Kiosk <i class="fa-solid fa-arrow-right text-[11px]"></i>
           </a>
         </div>
@@ -160,7 +160,7 @@
           </div>
 
           <!-- Action Button -->
-          <a href="/home-patient" class="w-full py-3 bg-[#10b981] hover:bg-[#059669] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+          <a href="/home-patient" id="linkHomeCompanion" class="w-full py-3 bg-[#10b981] hover:bg-[#059669] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
             Open Home Patient Portal <i class="fa-solid fa-arrow-right text-[11px]"></i>
           </a>
         </div>
@@ -187,7 +187,7 @@
           </div>
 
           <!-- Action Button -->
-          <a href="/dashboard/index.html" class="w-full py-3 bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
+          <a href="/dashboard/index.html" id="linkDoctorGateway" class="w-full py-3 bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all z-10 tracking-wider">
             Access Doctor Command <i class="fa-solid fa-arrow-right text-[11px]"></i>
           </a>
         </div>
@@ -196,10 +196,15 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="bg-white py-4 text-center text-xs text-slate-400 border-t border-slate-100 tracking-wider">
-    MediKiosk Point-of-Care Portal • System Online
-  </footer>
-
+  <!-- SCRIPT FOR DYNAMIC IP LINKING -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const host = window.location.hostname || 'localhost';
+      const kioskLink = document.getElementById('linkHospitalKiosk');
+      if (kioskLink) {
+        kioskLink.href = `http://${host}:5173`;
+      }
+    });
+  </script>
 </body>
 </html>

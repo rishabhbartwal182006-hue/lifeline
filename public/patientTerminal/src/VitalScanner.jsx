@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 const API_BASE = (typeof window !== 'undefined' && window.location.port === '5173')
-  ? 'http://localhost:4000'
+  ? `http://${window.location.hostname || 'localhost'}:4000`
   : '';
 
 // ── Small badge showing online / offline ─────────────────────
