@@ -426,6 +426,7 @@ function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setDocumentName(file.name);
     setOcrLoading(true);
     setOcrError(null);
 
@@ -476,6 +477,8 @@ function App() {
       setOcrLoading(false);
     }
   };
+
+  const handleDocumentUpload = handleOcrUpload;
 
   const goNext = () => {
     if (step === 2) setStep(3);
