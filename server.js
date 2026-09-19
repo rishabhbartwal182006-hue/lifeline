@@ -476,6 +476,7 @@ if (require.main === module) {
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`=======================================================`);
     console.log(` MediKiosk Unified Server running on port ${PORT}`);
+    console.log(` Landing Page: http://localhost:${PORT}/index.html`);
     console.log(` Patient Intake Kiosk: http://localhost:${PORT}/kiosk.html`);
     console.log(` Doctor Command Center: http://localhost:${PORT}/dashboard/index.html`);
     console.log(` Socket.IO Gateway Active`);
