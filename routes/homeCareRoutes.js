@@ -145,6 +145,7 @@ router.post('/:patientId/vitals/scan', async (req, res) => {
   } else {
     // 2. Scan from live ESP32-CAM (192.168.137.101) via FastAPI
     try {
+      const vType = req.body?.slot_type || 'blood_glucose';
       const response = await axios.post(
         `${SCANNER_URL}/api/scan-internal`,
         {
@@ -153,18 +154,47 @@ router.post('/:patientId/vitals/scan', async (req, res) => {
           provider: 'groq',
           device_target: 'home',
           esp32_url: 'http://192.168.137.101',
-          allow_sample_fallback: allow_sample_fallback === true
+          allow_sample_fallback: allow_sample_fallback === true,
+          flip_v: false,
+          flip_h: false,
+          brightness: 1.0,
+          contrast: 1.0,
+          sharpness: 1.0,
+          expected_type: vType,
+          vital_type: vType
         },
-        { timeout: 15000 }
+        { timeout: 20000 }
       );
 
-      if (response.data && response.data.parsed && response.data.parsed.value) {
-        readingData = response.data.parsed;
-        patient.deviceStatus = 'Connected';
-      } else {
+      const resData = response.data || {};
+      const vitalData = resData.vital || resData.parsed;
+      const imageBase64 = resData.image_base64 || resData.enhanced_base64 || null;
+
+      if (vitalData) {
+        let extractedVal = vitalData.value;
+        if (extractedVal === undefined || extractedVal === null) {
+          const rawText = String(vitalData.text_content || vitalData.clinical_notes || '');
+          const match = rawText.match(/\d+(\.\d+)?/);
+          if (match) extractedVal = Number(match[0]);
+        }
+
+        if (extractedVal !== undefined && extractedVal !== null && !isNaN(Number(extractedVal))) {
+          readingData = {
+            ...vitalData,
+            value: Number(extractedVal),
+            vital_type: vitalData.vital_type || vType,
+            unit: vitalData.unit || (vType === 'blood_pressure' ? 'mmHg' : (vType === 'spo2' ? '%' : 'mg/dL')),
+            image: imageBase64
+          };
+          patient.deviceStatus = 'Connected';
+        }
+      }
+
+      if (!readingData) {
         return res.status(422).json({
           success: false,
-          error: 'Frame captured from camera, but no medical reading was clearly identified. Please reposition the display or enter manually.'
+          image: imageBase64,
+          error: resData.error || 'Frame captured from camera, but could not detect numeric reading. Please ensure the device screen is bright and directly facing the camera lens.'
         });
       }
     } catch (err) {
@@ -239,6 +269,7 @@ router.post('/:patientId/vitals/scan', async (req, res) => {
   return res.status(201).json({
     success: true,
     reading: newRecord,
+    image: readingData.image || null,
     status,
     alert: status === 'alert' ? 'Abnormal reading flagged to primary doctor' : null
   });

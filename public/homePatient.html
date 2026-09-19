@@ -169,22 +169,25 @@
           <!-- VIEW 1: CAMERA SCANNER PANEL -->
           <div id="cameraScanPanel">
             <div class="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video flex flex-col items-center justify-center p-4 text-center border border-slate-800 mb-4">
+              <!-- Live Captured Image Frame -->
+              <img id="camPreviewImg" alt="ESP32 Live Feed" class="hidden absolute inset-0 w-full h-full object-contain bg-slate-950 z-0" />
+
               <!-- Scanning Reticle -->
-              <div id="scanOverlay" class="hidden absolute inset-0 bg-emerald-500/10 border-2 border-emerald-400 flex flex-col items-center justify-center z-10">
+              <div id="scanOverlay" class="hidden absolute inset-0 bg-emerald-500/10 border-2 border-emerald-400 flex flex-col items-center justify-center z-10 backdrop-blur-[1px]">
                 <div class="w-full h-1 bg-emerald-400 shadow-lg shadow-emerald-400/50 absolute top-0 animate-pulse"></div>
                 <div class="bg-slate-950/90 text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/40 flex items-center gap-2">
                   <i class="fa-solid fa-spinner fa-spin"></i>
-                  <span>Capturing from ESP32-CAM (192.168.137.101)...</span>
+                  <span>Groq AI Vision Processing (192.168.137.101)...</span>
                 </div>
               </div>
 
-              <!-- Camera status visual -->
-              <div id="camVisualIcon" class="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-400 mb-2">
+              <!-- Camera status visual placeholder -->
+              <div id="camVisualIcon" class="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-400 mb-2 relative z-5">
                 <i id="deviceIcon" class="fa-solid fa-droplet text-2xl text-rose-400 mb-1"></i>
                 <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold" id="deviceLabel">Glucometer</span>
               </div>
-              <p class="text-xs text-slate-300 font-medium" id="camStatusMsg">Checking camera connection...</p>
-              <p class="text-[11px] text-slate-500 mt-0.5 font-mono">Target IP: http://192.168.137.101/capture</p>
+              <p class="text-xs text-slate-300 font-medium relative z-5" id="camStatusMsg">Checking camera connection...</p>
+              <p class="text-[11px] text-slate-500 mt-0.5 font-mono relative z-5">Target IP: http://192.168.137.101/capture</p>
             </div>
 
             <!-- Action Button -->
@@ -374,30 +377,32 @@
       } catch (e) {}
     }
 
-    // Check Live Hardware Camera Connection (Every 4 seconds)
+    function setCamStatusUI(online) {
+      isCameraOnline = online;
+      const dot = document.getElementById('camDot');
+      const label = document.getElementById('camLabel');
+      const msg = document.getElementById('camStatusMsg');
+      const preview = document.getElementById('camPreviewImg');
+
+      if (online) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+        label.innerHTML = '<span class="text-emerald-400 font-semibold font-mono">192.168.137.101</span> Online';
+        msg.innerHTML = '<span class="text-emerald-400 font-semibold">Camera Online</span> — Place device in view';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        label.innerHTML = '<span class="text-rose-400 font-semibold">Home Cam (192.168.137.101)</span>';
+        msg.innerHTML = '<span class="text-slate-300 font-medium">Point device at ESP32-CAM lens</span>';
+      }
+    }
+
+    // Check Live Hardware Camera Connection
     async function checkCameraStatus() {
       try {
         const res = await fetch('/api/v1/vitals/status?target=home');
         const data = await res.json();
-        
-        isCameraOnline = (data.esp32_online === true);
-        const dot = document.getElementById('camDot');
-        const label = document.getElementById('camLabel');
-        const msg = document.getElementById('camStatusMsg');
-
-        if (isCameraOnline) {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
-          label.innerHTML = '<span class="text-emerald-400 font-semibold font-mono">192.168.137.101</span> Online';
-          msg.innerHTML = '<span class="text-emerald-400 font-semibold">Camera Online</span> — Place device in view';
-        } else {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-          label.innerHTML = '<span class="text-rose-400 font-semibold">Home Cam Disconnected</span>';
-          msg.innerHTML = '<span class="text-rose-400 font-semibold">⚠️ Camera Not Detected</span> (192.168.137.101)';
-        }
+        setCamStatusUI(data.esp32_online === true);
       } catch (err) {
-        isCameraOnline = false;
-        document.getElementById('camDot').className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-        document.getElementById('camLabel').innerText = 'Home Cam Offline';
+        setCamStatusUI(false);
       }
     }
 
@@ -462,13 +467,11 @@
 
     // Trigger Camera Scan
     async function triggerHomeScan() {
-      if (!isCameraOnline) {
-        showAlert('Camera Disconnected', 'Your Home ESP32-CAM is not reachable at 192.168.137.101. Please power on the camera or switch to "Manual" entry tab above.');
-        return;
-      }
-
       const scanBtn = document.getElementById('scanBtn');
       const scanOverlay = document.getElementById('scanOverlay');
+      const previewImg = document.getElementById('camPreviewImg');
+      const visualIcon = document.getElementById('camVisualIcon');
+      const statusMsg = document.getElementById('camStatusMsg');
       
       scanBtn.disabled = true;
       scanOverlay.classList.remove('hidden');
@@ -477,18 +480,34 @@
         const res = await fetch(`/api/v1/patient/${PATIENT_ID}/vitals/scan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ device_target: 'home' })
+          body: JSON.stringify({ 
+            device_target: 'home',
+            slot_type: currentVitalMode
+          })
         });
 
         const data = await res.json();
+
+        // If an image was captured from camera, display it in the viewfinder
+        if (data.image || (data.reading && data.reading.image)) {
+          const imgSrc = data.image || data.reading.image;
+          if (previewImg) {
+            previewImg.src = imgSrc;
+            previewImg.classList.remove('hidden');
+          }
+          if (visualIcon) visualIcon.classList.add('hidden');
+          if (statusMsg) statusMsg.classList.add('hidden');
+        }
+
         if (data.success && data.reading) {
           updateLatestReadingUI(data.reading);
           loadVitalsHistory();
+          showAlert('Reading Recorded Successfully', `Captured ${data.reading.value} ${data.reading.unit || ''} from Home Camera.`);
         } else {
-          showAlert('Camera Capture Notice', data.error || 'Could not detect vital reading from camera.');
+          showAlert('Camera Scan Notice', data.error || 'AI could not identify the numeric display. Please hold device steady directly in front of camera lens.');
         }
       } catch (err) {
-        showAlert('Camera Error', 'Failed to communicate with home camera server.');
+        showAlert('Camera Connection Error', 'Failed to communicate with vital scanner service (:8000). Please ensure vital vision engine is running.');
       } finally {
         scanBtn.disabled = false;
         scanOverlay.classList.add('hidden');
