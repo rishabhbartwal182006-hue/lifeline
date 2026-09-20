@@ -1788,7 +1788,7 @@ function App() {
 
             {/* Embedded Standalone Nova Assistant App */}
             <iframe
-              src={`http://${window.location.hostname || 'localhost'}:3000?step=${step}&session_id=${scannerSessionId}`}
+              src={`http://${window.location.hostname || 'localhost'}:3000?step=${step}&session_id=${scannerSessionId}&lang=${encodeURIComponent(language || 'हिन्दी')}`}
               title="NOVA Virtual Health Assistant"
               style={{
                 flex: 1,
@@ -1796,7 +1796,7 @@ function App() {
                 border: "none",
                 background: "#000000"
               }}
-              allow="microphone; camera; autoplay; fullscreen"
+              allow="microphone *; camera *; autoplay *; fullscreen *; speech-recognition *"
             />
           </div>
         </div>
