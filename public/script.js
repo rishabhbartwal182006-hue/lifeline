@@ -4,7 +4,7 @@
  * Theme: Emerald Green (#10b981) & Deep Mint (#059669)
  * Features:
  *   1. Custom Animated Medical Reticle & Hover Cursor
- *   2. Hero Section 3D Holographic Heart Core & Telemetry Rings
+ *   2. Hero Section 3D DNA Genome Scanner
  *   3. 3D Holographic AI Nurse Assistant Avatar (Cursor-tracking & 360 Spin)
  *   4. Interactive 3D Card Tilt Physics & Triage Priority Dynamics
  *   5. Scroll Entrance & Real-time Telemetry Simulations
@@ -84,216 +84,347 @@ function initCustomCursor() {
 }
 
 /* =========================================================
-   2. HERO SECTION 3D HOLOGRAPHIC MEDICAL HEART CORE
+   2. HERO SECTION 3D DNA GENOME SCANNER
 ========================================================= */
 function initHeroHeart3D() {
-  const canvas = document.getElementById("heroHeartCanvas");
-  if (!canvas || !window.THREE) return;
+  /* 3D DNA double helix with a diagnostic scan ring, floating medical crosses
+     and a sonar-style pulse on a holographic base. */
+  (function () {
+    'use strict';
 
-  const container = canvas.parentElement;
-  let width = container.clientWidth;
-  let height = container.clientHeight;
+    var container = document.getElementById('hero3dContainer');
+    var canvas = document.getElementById('heroHeartCanvas');
+    if (!container || !canvas || !window.THREE) return;
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    alpha: true,
-    antialias: true
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(width, height);
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    } catch (e) {
+      canvas.style.display = 'none';
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-  camera.position.set(0, 0, 7.2);
+    var EMERALD = 0x10b981;
+    var CYAN = 0x22d3ee;
 
-  // Medical Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-  scene.add(ambientLight);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0, 16);
 
-  const greenLight1 = new THREE.PointLight(0x10b981, 3.5, 25);
-  greenLight1.position.set(-4, 4, 5);
-  scene.add(greenLight1);
+    /* ---------- lights ---------- */
+    scene.add(new THREE.AmbientLight(0xbfffee, 0.55));
+    var keyLight = new THREE.PointLight(0x34d399, 2.2, 45);
+    keyLight.position.set(6, 5, 9);
+    var rimLight = new THREE.PointLight(CYAN, 1.8, 45);
+    rimLight.position.set(-7, -3, 5);
+    scene.add(keyLight, rimLight);
 
-  const mintLight2 = new THREE.PointLight(0x34d399, 2.5, 20);
-  mintLight2.position.set(4, -3, 4);
-  scene.add(mintLight2);
+    /* stage = tilt + mouse parallax for everything */
+    var stage = new THREE.Group();
+    stage.rotation.z = 0.2;
+    scene.add(stage);
 
-  // Master Heart Group (for levitation & mouse lookAt)
-  const masterGroup = new THREE.Group();
-  scene.add(masterGroup);
+    /* ---------- DNA helix ---------- */
+    var PAIRS = 34;
+    var HEIGHT = 9;
+    var RADIUS = 1.5;
+    var TWIST = 0.52; // radians per base pair
 
-  // --- Sculpting the 3D Holographic Medical Heart ---
-  const heartGroup = new THREE.Group();
-  masterGroup.add(heartGroup);
+    var helix = new THREE.Group();
+    stage.add(helix);
 
-  // Parametric Heart Geometry
-  const heartShape = new THREE.Shape();
-  const x = 0, y = 0;
-  heartShape.moveTo(x + 0.25, y + 0.25);
-  heartShape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
-  heartShape.bezierCurveTo(x - 0.35, y, x - 0.35, y + 0.35, x - 0.35, y + 0.35);
-  heartShape.bezierCurveTo(x - 0.35, y + 0.55, x - 0.15, y + 0.77, x + 0.25, y + 1.0);
-  heartShape.bezierCurveTo(x + 0.65, y + 0.77, x + 0.85, y + 0.55, x + 0.85, y + 0.35);
-  heartShape.bezierCurveTo(x + 0.85, y + 0.35, x + 0.85, y, x + 0.5, y);
-  heartShape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
+    var nodeGeo = new THREE.SphereGeometry(0.19, 20, 20);
+    var rungGeo = new THREE.CylinderGeometry(0.04, 0.04, 1, 8);
+    var UP = new THREE.Vector3(0, 1, 0);
+    var pairs = [];
 
-  const extrudeSettings = {
-    depth: 0.45,
-    bevelEnabled: true,
-    bevelSegments: 6,
-    steps: 2,
-    bevelSize: 0.15,
-    bevelThickness: 0.15
-  };
+    function glowMat(color) {
+      return new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.4,
+        roughness: 0.35,
+        metalness: 0.2
+      });
+    }
 
-  const heartGeo = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-  heartGeo.center();
+    function addRung(from, to, mat) {
+      var dir = new THREE.Vector3().subVectors(to, from);
+      var len = dir.length();
+      var mesh = new THREE.Mesh(rungGeo, mat);
+      mesh.position.copy(from).addScaledVector(dir, 0.5);
+      mesh.quaternion.setFromUnitVectors(UP, dir.normalize());
+      mesh.scale.set(1, len, 1);
+      helix.add(mesh);
+    }
 
-  // Outer Holographic Emerald Glass Core
-  const heartMat = new THREE.MeshPhysicalMaterial({
-    color: 0x10b981,
-    metalness: 0.2,
-    roughness: 0.1,
-    transmission: 0.45,
-    transparent: true,
-    opacity: 0.88,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.1,
-    emissive: 0x059669,
-    emissiveIntensity: 0.25
-  });
-  const heartMesh = new THREE.Mesh(heartGeo, heartMat);
-  heartMesh.rotation.z = Math.PI;
-  heartMesh.scale.set(1.5, 1.5, 1.5);
-  heartGroup.add(heartMesh);
+    for (var i = 0; i < PAIRS; i++) {
+      var t = i / (PAIRS - 1);
+      var y = (t - 0.5) * HEIGHT;
+      var a = i * TWIST;
 
-  // Wireframe Holographic Shell
-  const wireMat = new THREE.MeshBasicMaterial({
-    color: 0xa7f3d0,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.35
-  });
-  const wireMesh = new THREE.Mesh(heartGeo, wireMat);
-  wireMesh.rotation.z = Math.PI;
-  wireMesh.scale.set(1.56, 1.56, 1.56);
-  heartGroup.add(wireMesh);
+      var A = new THREE.Vector3(Math.cos(a) * RADIUS, y, Math.sin(a) * RADIUS);
+      var B = new THREE.Vector3(-A.x, y, -A.z);
+      var C = new THREE.Vector3(0, y, 0);
 
-  // --- Concentric Glowing Green Telemetry Rings ---
-  const ringGroup = new THREE.Group();
-  masterGroup.add(ringGroup);
+      var matA = glowMat(EMERALD);
+      var matB = glowMat(CYAN);
 
-  const ringMaterial1 = new THREE.MeshStandardMaterial({
-    color: 0x10b981,
-    roughness: 0.3,
-    metalness: 0.8,
-    transparent: true,
-    opacity: 0.75
-  });
+      var nodeA = new THREE.Mesh(nodeGeo, matA);
+      var nodeB = new THREE.Mesh(nodeGeo, matB);
+      nodeA.position.copy(A);
+      nodeB.position.copy(B);
+      helix.add(nodeA, nodeB);
 
-  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.028, 16, 90), ringMaterial1);
-  ring1.rotation.x = Math.PI / 2.8;
-  ringGroup.add(ring1);
+      addRung(A, C, matA); // each half of the base pair takes its strand's colour
+      addRung(B, C, matB);
 
-  const ringMaterial2 = new THREE.MeshBasicMaterial({
-    color: 0x34d399,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.4
-  });
+      pairs.push({ y: y, matA: matA, matB: matB, nodeA: nodeA, nodeB: nodeB });
+    }
 
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.45, 0.022, 16, 80), ringMaterial2);
-  ring2.rotation.y = Math.PI / 3.2;
-  ringGroup.add(ring2);
+    function addBackbone(sign, color) {
+      var pts = [];
+      var N = 180;
+      for (var j = 0; j <= N; j++) {
+        var tt = j / N;
+        var ang = tt * (PAIRS - 1) * TWIST;
+        pts.push(new THREE.Vector3(
+          sign * Math.cos(ang) * RADIUS,
+          (tt - 0.5) * HEIGHT,
+          sign * Math.sin(ang) * RADIUS
+        ));
+      }
+      var geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 360, 0.055, 8, false);
+      var mat = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.5,
+        roughness: 0.3,
+        metalness: 0.3,
+        transparent: true,
+        opacity: 0.9
+      });
+      helix.add(new THREE.Mesh(geo, mat));
+    }
+    addBackbone(1, EMERALD);
+    addBackbone(-1, CYAN);
 
-  const ring3 = new THREE.Mesh(
-    new THREE.TorusGeometry(2.8, 0.015, 12, 80),
-    new THREE.MeshBasicMaterial({ color: 0xa7f3d0, transparent: true, opacity: 0.3 })
-  );
-  ring3.rotation.x = -Math.PI / 4;
-  ringGroup.add(ring3);
+    /* ---------- scan ring (sweeps up and down the helix) ---------- */
+    var scanner = new THREE.Group();
+    stage.add(scanner);
 
-  // Orbiting Telemetry Particles
-  const particleCount = 4;
-  const particles = [];
-  const particleGeo = new THREE.SphereGeometry(0.08, 12, 12);
-  const particleMat = new THREE.MeshBasicMaterial({ color: 0xecfdf5 });
+    var ring = new THREE.Mesh(
+      new THREE.TorusGeometry(RADIUS + 1.1, 0.02, 8, 120),
+      new THREE.MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0.9 })
+    );
+    ring.rotation.x = Math.PI / 2;
 
-  for (let i = 0; i < particleCount; i++) {
-    const p = new THREE.Mesh(particleGeo, particleMat);
-    ringGroup.add(p);
-    particles.push({
-      mesh: p,
-      speed: 0.6 + i * 0.12,
-      radius: 2.1 + (i % 2) * 0.35,
-      offset: (i * Math.PI) / 2
-    });
-  }
+    var disc = new THREE.Mesh(
+      new THREE.CircleGeometry(RADIUS + 1.1, 64),
+      new THREE.MeshBasicMaterial({
+        color: CYAN,
+        transparent: true,
+        opacity: 0.07,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    disc.rotation.x = -Math.PI / 2;
+    scanner.add(ring, disc);
 
-  // --- Interactive Mouse Follow / Tilt Dynamics ---
-  let targetTiltX = 0;
-  let targetTiltY = 0;
-  let currentTiltX = 0;
-  let currentTiltY = 0;
+    /* ---------- holographic base + sonar pulse ---------- */
+    var base = new THREE.Group();
+    base.position.y = -HEIGHT / 2 - 1.0;
+    stage.add(base);
 
-  window.addEventListener("mousemove", (e) => {
-    const normX = (e.clientX / window.innerWidth) * 2 - 1;
-    const normY = -(e.clientY / window.innerHeight) * 2 + 1;
-    targetTiltX = normY * 0.35;
-    targetTiltY = normX * 0.45;
-  });
-
-  // --- Animation Loop with Levitation & Cardiac Pulse ---
-  const clock = new THREE.Clock();
-
-  function animate() {
-    requestAnimationFrame(animate);
-    const elapsed = clock.getElapsedTime();
-
-    // 1. Smooth continuous levitation along Y-axis (slow bobbing)
-    masterGroup.position.y = Math.sin(elapsed * 1.6) * 0.22;
-
-    // 2. Cardiac Heartbeat Rhythm Pulse (systole + diastole)
-    const pulseTime = elapsed * 3.5;
-    const beat = Math.pow(Math.sin(pulseTime), 6) * 0.1 + Math.pow(Math.sin(pulseTime + 0.3), 8) * 0.05;
-    const currentScale = 1.0 + beat;
-    heartGroup.scale.set(currentScale, currentScale, currentScale);
-
-    // 3. Telemetry rings continuous rotation
-    ring1.rotation.z = elapsed * 0.22;
-    ring2.rotation.x = elapsed * 0.18;
-    ring3.rotation.y = -elapsed * 0.15;
-
-    // 4. Orbiting particles tracking rings
-    particles.forEach((pt) => {
-      const angle = elapsed * pt.speed + pt.offset;
-      pt.mesh.position.set(
-        Math.cos(angle) * pt.radius,
-        Math.sin(angle * 1.5) * 0.4,
-        Math.sin(angle) * pt.radius
+    [2.6, 3.4, 4.2].forEach(function (r, idx) {
+      var m = new THREE.Mesh(
+        new THREE.RingGeometry(r, r + 0.025, 96),
+        new THREE.MeshBasicMaterial({
+          color: idx === 1 ? CYAN : EMERALD,
+          transparent: true,
+          opacity: 0.5 - idx * 0.12,
+          side: THREE.DoubleSide
+        })
       );
+      m.rotation.x = -Math.PI / 2;
+      base.add(m);
     });
 
-    // 5. Mouse-follow interactive tilt (Parallax / LookAt damping)
-    currentTiltX += (targetTiltX - currentTiltX) * 0.06;
-    currentTiltY += (targetTiltY - currentTiltY) * 0.06;
+    var pulseMat = new THREE.MeshBasicMaterial({
+      color: EMERALD,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    var pulse = new THREE.Mesh(new THREE.RingGeometry(2.5, 2.55, 96), pulseMat);
+    pulse.rotation.x = -Math.PI / 2;
+    base.add(pulse);
 
-    masterGroup.rotation.x = currentTiltX;
-    masterGroup.rotation.y = currentTiltY + elapsed * 0.12;
+    /* ---------- floating medical crosses ---------- */
+    function makeCross(size) {
+      var g = new THREE.Group();
+      var mat = new THREE.MeshStandardMaterial({
+        color: EMERALD,
+        emissive: EMERALD,
+        emissiveIntensity: 0.6,
+        roughness: 0.4,
+        metalness: 0.2,
+        transparent: true,
+        opacity: 0.85
+      });
+      var arm = new THREE.BoxGeometry(size, size * 0.32, size * 0.32);
+      var h = new THREE.Mesh(arm, mat);
+      var v = new THREE.Mesh(arm, mat);
+      v.rotation.z = Math.PI / 2;
+      g.add(h, v);
+      return g;
+    }
 
-    renderer.render(scene, camera);
-  }
-  animate();
+    var crosses = [
+      { x: -3.8, y: 2.9,  z: -0.5, s: 0.9,  spin: 0.6,  phase: 0.0 },
+      { x:  3.9, y: 1.2,  z:  0.8, s: 0.6,  spin: -0.8, phase: 1.7 },
+      { x: -3.4, y: -2.6, z:  1.0, s: 0.55, spin: 0.9,  phase: 3.1 },
+      { x:  3.6, y: -3.3, z: -1.0, s: 0.8,  spin: -0.5, phase: 4.6 }
+    ].map(function (c) {
+      var obj = makeCross(c.s);
+      obj.position.set(c.x, c.y, c.z);
+      stage.add(obj);
+      c.obj = obj;
+      return c;
+    });
 
-  // Resize Handler
-  window.addEventListener("resize", () => {
-    if (!canvas.parentElement) return;
-    width = canvas.parentElement.clientWidth;
-    height = canvas.parentElement.clientHeight;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  });
+    /* ---------- ambient particles ---------- */
+    var COUNT = 140;
+    var pos = new Float32Array(COUNT * 3);
+    for (var p = 0; p < COUNT; p++) {
+      var r = 2.5 + Math.random() * 3.2;
+      var th = Math.random() * Math.PI * 2;
+      pos[p * 3]     = Math.cos(th) * r;
+      pos[p * 3 + 1] = (Math.random() - 0.5) * 11;
+      pos[p * 3 + 2] = Math.sin(th) * r;
+    }
+    var pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
+      color: 0x67e8f9,
+      size: 0.06,
+      transparent: true,
+      opacity: 0.7,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    }));
+    stage.add(particles);
+
+    /* ---------- sizing ---------- */
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function resize() {
+      var w = container.clientWidth;
+      var h = container.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      // pull the camera back on narrow containers so nothing is cropped
+      camera.position.z = Math.max(16, 9.5 / (0.7279 * camera.aspect));
+      camera.updateProjectionMatrix();
+      if (reduced) render(2.2);
+    }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(resize).observe(container);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+
+    /* ---------- pointer parallax ---------- */
+    var mouse = { x: 0, y: 0 };
+    var target = { x: 0, y: 0 };
+    container.addEventListener('pointermove', function (e) {
+      var b = container.getBoundingClientRect();
+      target.x = (e.clientX - b.left) / b.width - 0.5;
+      target.y = (e.clientY - b.top) / b.height - 0.5;
+    });
+    container.addEventListener('pointerleave', function () {
+      target.x = 0;
+      target.y = 0;
+    });
+
+    /* ---------- render ---------- */
+    function render(t) {
+      helix.rotation.y = t * 0.35;
+
+      mouse.x += (target.x - mouse.x) * 0.05;
+      mouse.y += (target.y - mouse.y) * 0.05;
+      stage.rotation.y = mouse.x * 0.5;
+      stage.rotation.x = mouse.y * 0.35;
+
+      // scan ring sweeps the helix; base pairs light up as it passes
+      var scanY = Math.sin(t * 0.8) * (HEIGHT / 2 + 0.3);
+      scanner.position.y = scanY;
+      for (var k = 0; k < pairs.length; k++) {
+        var pr = pairs[k];
+        var d = pr.y - scanY;
+        var glow = Math.exp(-d * d * 1.4);
+        var inten = 0.4 + glow * 2.0;
+        pr.matA.emissiveIntensity = inten;
+        pr.matB.emissiveIntensity = inten;
+        var sc = 1 + glow * 0.6;
+        pr.nodeA.scale.setScalar(sc);
+        pr.nodeB.scale.setScalar(sc);
+      }
+
+      // sonar pulse on the base
+      var phase = (t * 0.5) % 1;
+      pulse.scale.setScalar(1 + phase * 0.9);
+      pulseMat.opacity = 0.55 * (1 - phase);
+
+      // floating crosses
+      for (var c = 0; c < crosses.length; c++) {
+        var cr = crosses[c];
+        cr.obj.rotation.y = t * cr.spin;
+        cr.obj.rotation.x = Math.sin(t * 0.5 + cr.phase) * 0.3;
+        cr.obj.position.y = cr.y + Math.sin(t * 0.7 + cr.phase) * 0.25;
+      }
+
+      particles.rotation.y = t * 0.05;
+      renderer.render(scene, camera);
+    }
+
+    /* ---------- loop (pauses when off-screen or tab hidden) ---------- */
+    var clock = new THREE.Clock();
+    var raf = 0;
+    var inView = true;
+    var tabVisible = !document.hidden;
+
+    function loop() {
+      raf = requestAnimationFrame(loop);
+      render(clock.getElapsedTime());
+    }
+    function sync() {
+      var shouldRun = inView && tabVisible && !reduced;
+      if (shouldRun && !raf) loop();
+      if (!shouldRun && raf) { cancelAnimationFrame(raf); raf = 0; }
+    }
+
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (entries) {
+        inView = entries[0].isIntersecting;
+        sync();
+      }).observe(container);
+    }
+    document.addEventListener('visibilitychange', function () {
+      tabVisible = !document.hidden;
+      sync();
+    });
+
+    resize();
+    if (reduced) { render(2.2); } else { sync(); }
+  })();
 }
 
 /* =========================================================
