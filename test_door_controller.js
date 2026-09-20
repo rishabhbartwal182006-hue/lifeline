@@ -15,7 +15,7 @@ const kioskRouter = require('./routes/kioskRoutes');
 async function runTests() {
   console.log('🧪 Starting Hospital Kiosk Door Controller Tests...\n');
 
-  let currentAngle = 0; // Default closed (0 deg)
+  let currentAngle = 6; // Default closed (6 deg)
   let isDoorOpen = false;
 
   // 1. Setup Mock Door Controller HTTP server
@@ -31,12 +31,12 @@ async function runTests() {
         device_id: 'LIFELINE-KIOSK-DOOR-01'
       }));
     } else if (req.url === '/door/close') {
-      currentAngle = 0;
+      currentAngle = 6;
       isDoorOpen = false;
       res.end(JSON.stringify({
         success: true,
         status: 'closed',
-        angle: 0,
+        angle: 6,
         device_id: 'LIFELINE-KIOSK-DOOR-01'
       }));
     } else if (req.url === '/door/status') {
@@ -98,12 +98,12 @@ async function runTests() {
   }
 
   // Test 3: Close Door
-  console.log('\n--- Test 3: Command Close Door (Angle 0°) ---');
+  console.log('\n--- Test 3: Command Close Door (Angle 6°) ---');
   const res3 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/close`, { method: 'POST' });
   const data3 = await res3.json();
   console.log('Close Door Response:', data3);
-  if (data3.success && data3.online && data3.status === 'closed' && data3.angle === 0) {
-    console.log('✅ Test 3 PASSED: Door successfully commanded to CLOSE (0 deg)');
+  if (data3.success && data3.online && data3.status === 'closed' && data3.angle === 6) {
+    console.log('✅ Test 3 PASSED: Door successfully commanded to CLOSE (6 deg)');
   } else {
     console.error('❌ Test 3 FAILED');
     process.exit(1);
@@ -114,7 +114,7 @@ async function runTests() {
   const res4 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/status`);
   const data4 = await res4.json();
   console.log('Door Status Response:', data4);
-  if (data4.success && data4.online && data4.status === 'closed' && data4.angle === 0) {
+  if (data4.success && data4.online && data4.status === 'closed' && data4.angle === 6) {
     console.log('✅ Test 4 PASSED: Door status query returned accurate state');
   } else {
     console.error('❌ Test 4 FAILED');

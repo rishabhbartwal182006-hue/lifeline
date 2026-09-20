@@ -181,6 +181,18 @@ function App() {
         }
       }
 
+      // ── door-action: control kiosk bay door from Nova assistant ──
+      if (data.type === "door-action") {
+        const action = data.payload?.action;
+        if (action === "open" || action === "close") {
+          const backendHost = window.location.hostname || 'localhost';
+          const doorUrl = (window.location.port === '5173')
+            ? `http://${backendHost}:4000/api/v1/kiosk/door/${action}`
+            : `/api/v1/kiosk/door/${action}`;
+          fetch(doorUrl, { method: "POST" }).catch(() => {});
+        }
+      }
+
       // ── go-to-report: navigate to report screen ──
       if (data.type === "go-to-report") {
         setShowNovaModal(false);
@@ -192,6 +204,37 @@ function App() {
     window.addEventListener("message", handleNovaMessage);
     return () => window.removeEventListener("message", handleNovaMessage);
   }, []);
+
+  // ── Form Flow: Auto-open door when entering Step 7 (Taking vitals) ──
+  useEffect(() => {
+    if (step === 7) {
+      const backendHost = window.location.hostname || 'localhost';
+      const openUrl = (window.location.port === '5173')
+        ? `http://${backendHost}:4000/api/v1/kiosk/door/open`
+        : '/api/v1/kiosk/door/open';
+      fetch(openUrl, { method: "POST" })
+        .then(r => r.json())
+        .then(res => console.log("[Door] Bay door auto-opened on Step 7 entry:", res))
+        .catch(err => console.warn("[Door] Auto-open failed:", err));
+    }
+  }, [step]);
+
+  // ── Auto-close door 5s after summary of report (Step 8) is shown ──
+  useEffect(() => {
+    if (step === 8) {
+      const timer = setTimeout(() => {
+        const backendHost = window.location.hostname || 'localhost';
+        const closeUrl = (window.location.port === '5173')
+          ? `http://${backendHost}:4000/api/v1/kiosk/door/close`
+          : '/api/v1/kiosk/door/close';
+        fetch(closeUrl, { method: "POST" })
+          .then(r => r.json())
+          .then(res => console.log("[Door] Bay door auto-closed 5s after report displayed:", res))
+          .catch(err => console.warn("[Door] Auto-close failed:", err));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   const hasCardiacRedFlag =
     symptomList.some(s => /chest|heart|cardiac/i.test(s)) &&
@@ -492,11 +535,31 @@ function App() {
       if (symptomList.includes("Chest discomfort")) setStep(6);
       else setStep(7);
     } else if (step === 6 && validateHpi()) setStep(7);
-    else if (step === 7) setStep(8);
+    else if (step === 7) {
+      // Proceeding to next step from Step 7: close door automatically
+      const backendHost = window.location.hostname || 'localhost';
+      const closeUrl = (window.location.port === '5173')
+        ? `http://${backendHost}:4000/api/v1/kiosk/door/close`
+        : '/api/v1/kiosk/door/close';
+      fetch(closeUrl, { method: "POST" }).catch(() => {});
+      setStep(8);
+    }
   };
 
   const BackButton = ({ target }) => (
-    <button className="secondary-btn" onClick={() => setStep(target)}>
+    <button
+      className="secondary-btn"
+      onClick={() => {
+        if (step === 7) {
+          const backendHost = window.location.hostname || 'localhost';
+          const closeUrl = (window.location.port === '5173')
+            ? `http://${backendHost}:4000/api/v1/kiosk/door/close`
+            : '/api/v1/kiosk/door/close';
+          fetch(closeUrl, { method: "POST" }).catch(() => {});
+        }
+        setStep(target);
+      }}
+    >
       ← Back
     </button>
   );

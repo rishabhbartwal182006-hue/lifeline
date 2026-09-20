@@ -156,7 +156,6 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         throw new Error(data.error || `Scan failed (${res.status})`);
       }
       setResult(data.reading);
-      setCountdown(5); // Start 5-second countdown to auto-close door after machine is removed
       if (onScanSuccess && data.reading) {
         onScanSuccess(data.reading);
       }
@@ -203,8 +202,8 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         </div>
       </div>
 
-      {/* 5-Second Post-Scan Door Countdown Banner */}
-      {countdown !== null && (
+      {/* Notice Banner after scan */}
+      {result && (
         <div style={{
           background: '#ecfdf5',
           border: '1px solid #6ee7b7',
@@ -221,43 +220,27 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
           fontSize: 13
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 18 }}>⏱️</span>
-            <span>Reading captured! Please retrieve your device. Bay door closing in <b>{countdown}s</b>...</span>
+            <span style={{ fontSize: 18 }}>🚪</span>
+            <span>Reading captured! The bay door will close automatically when you proceed to the next step.</span>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => { closeDoor(); setCountdown(null); }}
-              style={{
-                padding: '6px 12px',
-                background: '#047857',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              Close Door Now
-            </button>
-            <button
-              type="button"
-              onClick={() => setCountdown(null)}
-              style={{
-                padding: '6px 12px',
-                background: '#ffffff',
-                color: '#047857',
-                border: '1px solid #a7f3d0',
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Keep Open
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={closeDoor}
+            disabled={doorStatus === 'closed'}
+            style={{
+              padding: '6px 12px',
+              background: '#047857',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: doorStatus === 'closed' ? 'default' : 'pointer',
+              opacity: doorStatus === 'closed' ? 0.6 : 1
+            }}
+          >
+            {doorStatus === 'closed' ? 'Door Closed' : 'Close Door Now'}
+          </button>
         </div>
       )}
 
@@ -345,7 +328,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             gap: 4
           }}
         >
-          <span>🔒</span> Close (0°)
+          <span>🔒</span> Close (6°)
         </button>
       </div>
 
