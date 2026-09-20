@@ -174,7 +174,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             border: `1px solid ${doorStatus === 'open' ? '#a7f3d0' : (doorStatus === 'moving' ? '#fde68a' : '#cbd5e1')}`
           }}>
             <span>🚪</span>
-            <span>Door: {doorStatus === 'open' ? 'Open (0°)' : (doorStatus === 'moving' ? 'Moving...' : 'Closed (90°)')}</span>
+            <span>Door: {doorStatus === 'open' ? 'Open (180°)' : (doorStatus === 'moving' ? 'Moving...' : 'Closed (6°)')}</span>
           </span>
         </div>
       </div>
