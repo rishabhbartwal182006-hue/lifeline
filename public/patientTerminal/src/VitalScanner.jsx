@@ -324,7 +324,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             gap: 4
           }}
         >
-          <span>🚪</span> Open (0°)
+          <span>🚪</span> Open (180°)
         </button>
         <button
           type="button"
@@ -345,7 +345,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             gap: 4
           }}
         >
-          <span>🔒</span> Close (90°)
+          <span>🔒</span> Close (0°)
         </button>
       </div>
 

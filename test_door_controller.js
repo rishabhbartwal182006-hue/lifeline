@@ -15,28 +15,28 @@ const kioskRouter = require('./routes/kioskRoutes');
 async function runTests() {
   console.log('🧪 Starting Hospital Kiosk Door Controller Tests...\n');
 
-  let currentAngle = 90; // Default closed
+  let currentAngle = 0; // Default closed (0 deg)
   let isDoorOpen = false;
 
   // 1. Setup Mock Door Controller HTTP server
   const mockDoorServer = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     if (req.url === '/door/open') {
-      currentAngle = 0;
+      currentAngle = 180;
       isDoorOpen = true;
       res.end(JSON.stringify({
         success: true,
         status: 'open',
-        angle: 0,
+        angle: 180,
         device_id: 'LIFELINE-KIOSK-DOOR-01'
       }));
     } else if (req.url === '/door/close') {
-      currentAngle = 90;
+      currentAngle = 0;
       isDoorOpen = false;
       res.end(JSON.stringify({
         success: true,
         status: 'closed',
-        angle: 90,
+        angle: 0,
         device_id: 'LIFELINE-KIOSK-DOOR-01'
       }));
     } else if (req.url === '/door/status') {
@@ -76,12 +76,12 @@ async function runTests() {
   console.log(`[PASS] Test Express server running on port ${testServerPort}`);
 
   // Test 1: Open Door
-  console.log('\n--- Test 1: Command Open Door (Angle 0°) ---');
+  console.log('\n--- Test 1: Command Open Door (Angle 180°) ---');
   const res1 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/open`, { method: 'POST' });
   const data1 = await res1.json();
   console.log('Open Door Response:', data1);
-  if (data1.success && data1.online && data1.status === 'open' && data1.angle === 0) {
-    console.log('✅ Test 1 PASSED: Door successfully commanded to OPEN (0 deg)');
+  if (data1.success && data1.online && data1.status === 'open' && data1.angle === 180) {
+    console.log('✅ Test 1 PASSED: Door successfully commanded to OPEN (180 deg)');
   } else {
     console.error('❌ Test 1 FAILED');
     process.exit(1);
@@ -90,7 +90,7 @@ async function runTests() {
   // Test 2: Verify Socket.IO broadcast
   console.log('\n--- Test 2: Socket.IO kiosk:door_state Event ---');
   const doorEvent = emittedEvents.find(e => e.event === 'kiosk:door_state');
-  if (doorEvent && doorEvent.payload.status === 'open' && doorEvent.payload.angle === 0) {
+  if (doorEvent && doorEvent.payload.status === 'open' && doorEvent.payload.angle === 180) {
     console.log('✅ Test 2 PASSED: Socket.IO kiosk:door_state broadcast verified');
   } else {
     console.error('❌ Test 2 FAILED');
@@ -98,12 +98,12 @@ async function runTests() {
   }
 
   // Test 3: Close Door
-  console.log('\n--- Test 3: Command Close Door (Angle 90°) ---');
+  console.log('\n--- Test 3: Command Close Door (Angle 0°) ---');
   const res3 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/close`, { method: 'POST' });
   const data3 = await res3.json();
   console.log('Close Door Response:', data3);
-  if (data3.success && data3.online && data3.status === 'closed' && data3.angle === 90) {
-    console.log('✅ Test 3 PASSED: Door successfully commanded to CLOSE (90 deg)');
+  if (data3.success && data3.online && data3.status === 'closed' && data3.angle === 0) {
+    console.log('✅ Test 3 PASSED: Door successfully commanded to CLOSE (0 deg)');
   } else {
     console.error('❌ Test 3 FAILED');
     process.exit(1);
@@ -114,7 +114,7 @@ async function runTests() {
   const res4 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/status`);
   const data4 = await res4.json();
   console.log('Door Status Response:', data4);
-  if (data4.success && data4.online && data4.status === 'closed' && data4.angle === 90) {
+  if (data4.success && data4.online && data4.status === 'closed' && data4.angle === 0) {
     console.log('✅ Test 4 PASSED: Door status query returned accurate state');
   } else {
     console.error('❌ Test 4 FAILED');

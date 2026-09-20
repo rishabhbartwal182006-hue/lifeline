@@ -217,7 +217,7 @@ router.post('/door/open', async (req, res) => {
   try {
     const espRes = await axios.get(`http://${ip}/door/open`, { timeout: 3000 });
     const io = req.app.get('io');
-    if (io) io.emit('kiosk:door_state', { status: 'open', angle: 0 });
+    if (io) io.emit('kiosk:door_state', { status: 'open', angle: 180 });
     return res.json({ success: true, online: true, ...espRes.data });
   } catch (err) {
     return res.json({
@@ -235,7 +235,7 @@ router.post('/door/close', async (req, res) => {
   try {
     const espRes = await axios.get(`http://${ip}/door/close`, { timeout: 3000 });
     const io = req.app.get('io');
-    if (io) io.emit('kiosk:door_state', { status: 'closed', angle: 90 });
+    if (io) io.emit('kiosk:door_state', { status: 'closed', angle: 0 });
     return res.json({ success: true, online: true, ...espRes.data });
   } catch (err) {
     return res.json({
