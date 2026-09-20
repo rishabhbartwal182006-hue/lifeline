@@ -38,7 +38,6 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
   const [scannerOnline, setScannerOnline]   = useState(null);
   const [esp32Online,   setEsp32Online]     = useState(null);
   const [doorStatus,    setDoorStatus]      = useState('closed'); // 'open' | 'closed' | 'moving' | 'offline'
-  const [countdown,     setCountdown]       = useState(null);     // seconds left to auto-close
   const [scanning,      setScanning]        = useState(false);
   const [result,        setResult]          = useState(null);   // last scan result
   const [error,         setError]           = useState(null);
@@ -83,28 +82,6 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
       setDoorStatus('offline');
     }
   }, []);
-
-  // Auto-open door when Vitals Scanner mounts
-  useEffect(() => {
-    openDoor();
-    return () => {
-      closeDoor(); // Seal door when moving away from scanner step
-    };
-  }, [openDoor, closeDoor]);
-
-  // Countdown timer for automatic door closure after device removal
-  useEffect(() => {
-    if (countdown === null) return;
-    if (countdown === 0) {
-      closeDoor();
-      setCountdown(null);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setCountdown(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [countdown, closeDoor]);
 
   // Poll status every 8 seconds (paused while scanning to avoid camera buffer collision)
   const checkStatus = useCallback(async () => {
