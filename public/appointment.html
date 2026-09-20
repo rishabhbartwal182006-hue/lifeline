@@ -156,52 +156,82 @@
       </div>
     </section>
 
-    <!-- ===== Step 4: Confirmation ===== -->
+    <!-- ===== Step 4: Confirmation / Status ===== -->
     <section class="ap-panel" id="panel-4">
-      <div class="ap-confirm-head">
-        <span class="ap-confirm-check">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-        </span>
-        <h2 class="ap-panel-title">You're booked!</h2>
-        <p class="ap-panel-hint">Save or screenshot your token below. Please arrive 15 minutes before your slot for check-in and vitals capture.</p>
+      <div id="statusPending">
+        <div class="ap-confirm-head">
+          <h2 class="ap-panel-title">Request Sent!</h2>
+        </div>
+        <div class="ap-status-card ap-status-card--pending">
+          <span class="ap-pending-pulse"></span>
+          <span class="ap-status-badge ap-status-badge--pending">Awaiting doctor review</span>
+          <p class="ap-panel-hint" style="margin:0;">You will receive your token here if the doctor accepts the appointment. This page checks automatically — no need to refresh.</p>
+        </div>
       </div>
 
-      <div class="ap-token-card" id="tokenCard">
-        <div class="ap-token-stub">
-          <div class="ap-token-label">MediKiosk Appointment Token</div>
-          <div class="ap-token-number" id="tkNumber">—</div>
-          <div class="ap-token-grid">
-            <div>
-              <div class="ap-token-k">Patient</div>
-              <div class="ap-token-v" id="tkName">—</div>
-            </div>
-            <div>
-              <div class="ap-token-k">Department</div>
-              <div class="ap-token-v" id="tkDept">—</div>
-            </div>
-            <div>
-              <div class="ap-token-k">Date</div>
-              <div class="ap-token-v" id="tkDate">—</div>
-            </div>
-            <div>
-              <div class="ap-token-k">Arrival time</div>
-              <div class="ap-token-v ap-token-v--accent" id="tkTime">—</div>
+      <div id="statusRejected" style="display: none;">
+        <div class="ap-confirm-head">
+          <h2 class="ap-panel-title" style="color: #e74c3c;">Requested Time Unavailable</h2>
+        </div>
+        <div class="ap-status-card ap-status-card--rejected">
+          <span class="ap-status-badge ap-status-badge--rejected">Declined</span>
+          <p class="ap-panel-hint" style="margin:0;">The doctor has declined the requested slot. Please try booking a different time.</p>
+        </div>
+        <div class="ap-actions ap-actions--center">
+          <button class="ap-btn ap-btn--primary" id="rebookBtn">Re-book Appointment</button>
+        </div>
+      </div>
+
+      <div id="statusApproved" style="display: none;">
+        <div class="ap-confirm-head">
+          <span class="ap-confirm-check">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+          </span>
+          <h2 class="ap-panel-title">Appointment Confirmed!</h2>
+          <span class="ap-status-badge ap-status-badge--approved">Approved</span>
+          <p class="ap-panel-hint" style="margin-top:10px;">Save or screenshot your token below. Please arrive 15 minutes before your slot for check-in and vitals capture.</p>
+        </div>
+
+        <div class="ap-token-card" id="tokenCard">
+          <div class="ap-token-stub">
+            <div class="ap-token-label">MediKiosk Appointment Token</div>
+            <div class="ap-token-number" id="tkNumber">—</div>
+            <div class="ap-token-grid">
+              <div>
+                <div class="ap-token-k">Patient</div>
+                <div class="ap-token-v" id="tkName">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Department</div>
+                <div class="ap-token-v" id="tkDept">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Date</div>
+                <div class="ap-token-v" id="tkDate">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Arrival time</div>
+                <div class="ap-token-v ap-token-v--accent" id="tkTime">—</div>
+              </div>
             </div>
           </div>
+          <div class="ap-token-perf"></div>
+          <div class="ap-token-slip">
+            <div class="ap-token-k">Please arrive by</div>
+            <div class="ap-token-time-big" id="tkTimeBig">—</div>
+            <div class="ap-token-note">Token <span id="tkNumberSmall">—</span></div>
+          </div>
         </div>
-        <div class="ap-token-perf"></div>
-        <div class="ap-token-slip">
-          <div class="ap-token-k">Please arrive by</div>
-          <div class="ap-token-time-big" id="tkTimeBig">—</div>
-          <div class="ap-token-note">Token <span id="tkNumberSmall">—</span></div>
-        </div>
-      </div>
 
-      <div class="ap-actions ap-actions--center">
-        <button class="ap-btn ap-btn--primary" id="downloadToken">⬇ Download Token</button>
-        <button class="ap-btn ap-btn--ghost" onclick="window.print()">Print</button>
-        <button class="ap-btn ap-btn--ghost" id="bookAnother">Book another appointment</button>
+        <div class="ap-actions ap-actions--center">
+          <button class="ap-btn ap-btn--primary" id="downloadToken">⬇ Download Token</button>
+          <button class="ap-btn ap-btn--ghost" onclick="window.print()">Print</button>
+          <button class="ap-btn ap-btn--ghost" id="bookAnother">Book another appointment</button>
+        </div>
       </div>
+      <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      </style>
     </section>
 
   </main>

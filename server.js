@@ -20,6 +20,7 @@ const hprAuthMiddleware = require('./middleware/hprAuth');
 const ocrRoutes = require('./routes/ocrRoutes');
 const medicationRoutes = require('./routes/medicationRoutes');
 const homeCareRoutes = require('./routes/homeCareRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 const { evaluateMultiSystemTriage } = require('./services/redFlagRules');
 
 const app = express();
@@ -62,6 +63,9 @@ app.get(['/home-patient', '/home-care', '/personal-device'], (req, res) => {
 app.get(['/landing', '/landingPage.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landingPage.html'));
 });
+app.get('/doctor-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'doctor', 'index.html'));
+});
 
 // LifeLine 360 — Home Care & Remote Patient Monitoring (RPM)
 app.use('/api/v1/patient', medicationRoutes.router);
@@ -70,6 +74,7 @@ app.use('/api/v1/homecare', homeCareRoutes.router);
 app.use('/api/v1', homeCareRoutes.router);
 
 // API Base Routes Mounting
+app.use('/api/appointments', appointmentRoutes);
 app.use('/api/v1/kiosk', kioskRoutes);
 app.use('/api/v1/clinical', clinicalRoutes);
 app.use('/api/v1/hpr', hprRoutes);
@@ -480,7 +485,7 @@ if (require.main === module) {
     console.log(`=======================================================`);
     console.log(` MediKiosk Unified Server running on port ${PORT}`);
     console.log(` Landing Page: http://localhost:${PORT}/index.html`);
-    console.log(` Patient Intake Kiosk: http://localhost:${PORT}/kiosk.html`);
+    console.log(` Patient Intake Kiosk: http://localhost:4000/patientTerminal/dist/index.html`);
     console.log(` Doctor Command Center: http://localhost:${PORT}/dashboard/index.html`);
     console.log(` Socket.IO Gateway Active`);
     console.log(` Health Check: http://localhost:${PORT}/health`);

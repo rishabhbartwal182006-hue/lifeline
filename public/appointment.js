@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (toStep4Btn) {
-    toStep4Btn.addEventListener('click', (e) => {
+    toStep4Btn.addEventListener('click', async (e) => {
       e.preventDefault();
       if (!apForm) return;
 
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reason: document.getElementById('fReason')?.value.trim() || ''
       };
 
-      // Generate Appointment Token
+      // Generate Appointment Token Details
       const tokenNumber = `MK-${state.selectedDept.code}-${Math.floor(1000 + Math.random() * 9000)}`;
       const arrivalTime = calculateArrivalTime(state.selectedTime);
       const formattedDate = formatDisplayDate(state.selectedDate);
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.tokenData = tokenPayload;
       state.token = tokenPayload;
 
-      // Populate Step 4 Confirmation Card
+      // Populate Step 4 Confirmation Card (to be shown later if approved)
       if (tkNumber) tkNumber.textContent = tokenNumber;
       if (tkNumberSmall) tkNumberSmall.textContent = tokenNumber;
       if (tkName) tkName.textContent = tokenPayload.name;
@@ -285,10 +285,71 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tkTime) tkTime.textContent = arrivalTime;
       if (tkTimeBig) tkTimeBig.textContent = arrivalTime;
 
-      // Save to localStorage for patient history
-      saveAppointmentToStorage(state.tokenData);
+      // Reset Step 4 views
+      document.getElementById('statusPending').style.display = 'block';
+      document.getElementById('statusApproved').style.display = 'none';
+      document.getElementById('statusRejected').style.display = 'none';
 
       goToStep(4);
+
+      try {
+        const res = await fetch('/api/appointments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientName: state.patient.name,
+            age: state.patient.age,
+            gender: state.patient.gender,
+            phone: state.patient.phone,
+            symptoms: state.patient.reason,
+            department: state.selectedDept.name,
+            requestedDate: state.selectedDate,
+            requestedTime: state.selectedTime,
+            arrivalTime: arrivalTime,
+            tokenNumber: tokenNumber
+          })
+        });
+        const createdAppt = await res.json();
+        
+        // Start polling
+        startPolling(createdAppt._id);
+        
+      } catch (err) {
+        console.error('Failed to create appointment', err);
+        alert('Failed to send appointment request. Please try again.');
+        goToStep(3);
+      }
+    });
+  }
+  
+  function startPolling(id) {
+    if (state.pollInterval) clearInterval(state.pollInterval);
+    state.pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/appointments/${id}`);
+        if (!res.ok) return;
+        const appt = await res.json();
+        
+        if (appt.status === 'approved') {
+          clearInterval(state.pollInterval);
+          document.getElementById('statusPending').style.display = 'none';
+          document.getElementById('statusApproved').style.display = 'block';
+          saveAppointmentToStorage(state.tokenData);
+        } else if (appt.status === 'rejected') {
+          clearInterval(state.pollInterval);
+          document.getElementById('statusPending').style.display = 'none';
+          document.getElementById('statusRejected').style.display = 'block';
+        }
+      } catch (e) {
+        console.error('Polling error', e);
+      }
+    }, 2000); // poll every 2s
+  }
+
+  const rebookBtn = document.getElementById('rebookBtn');
+  if (rebookBtn) {
+    rebookBtn.addEventListener('click', () => {
+      goToStep(2); // Go back to time selection
     });
   }
 
