@@ -67,12 +67,17 @@ app.get(['/home-patient', '/home-care', '/personal-device'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'homePatient.html'));
 });
-app.get(['/appointment', '/appointments', '/appointment.html'], (req, res) => {
+app.get(['/appointment', '/book-appointment', '/appointment.html'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'appointment.html'));
 });
-app.get('/doctor-dashboard', (req, res) => {
+app.get(['/doctor-dashboard', '/dashboard'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'triage-engine', 'dashboard', 'index.html'));
+});
+app.get(['/doctor-appointments', '/doctor/appointments', '/appointments', '/appointments.html', '/dashboard/appointments', '/dashboard/appointments.html'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.sendFile(path.join(__dirname, 'triage-engine', 'dashboard', 'appointments.html'));
 });
 
 // LifeLine 360 — Home Care & Remote Patient Monitoring (RPM)

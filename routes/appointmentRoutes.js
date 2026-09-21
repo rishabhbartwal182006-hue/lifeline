@@ -14,6 +14,7 @@ router.post('/', async (req, res) => {
       department, requestedDate, requestedTime, arrivalTime, tokenNumber
     } = req.body;
 
+    let responseDoc = null;
     if (isMongoConnected()) {
       const newAppointment = new Appointment({
         patientName, age, gender, phone, symptoms,
@@ -21,28 +22,35 @@ router.post('/', async (req, res) => {
         status: 'pending'
       });
       await newAppointment.save();
-      return res.status(201).json(newAppointment);
+      responseDoc = newAppointment;
+    } else {
+      // Fallback: in-memory store
+      const doc = {
+        _id: `appt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        patientName: patientName || 'Anonymous',
+        age: Number(age) || 30,
+        gender: gender || 'Other',
+        phone: phone || '',
+        symptoms: symptoms || '',
+        department: department || 'General Medicine',
+        requestedDate: requestedDate || new Date().toISOString().split('T')[0],
+        requestedTime: requestedTime || '10:00 AM',
+        arrivalTime: arrivalTime || '09:45 AM',
+        tokenNumber: tokenNumber || `T-${Math.floor(100 + Math.random() * 900)}`,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      memAppointments.unshift(doc);
+      responseDoc = doc;
     }
 
-    // Fallback: in-memory store
-    const doc = {
-      _id: `appt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      patientName: patientName || 'Anonymous',
-      age: Number(age) || 30,
-      gender: gender || 'Other',
-      phone: phone || '',
-      symptoms: symptoms || '',
-      department: department || 'General Medicine',
-      requestedDate: requestedDate || new Date().toISOString().split('T')[0],
-      requestedTime: requestedTime || '10:00 AM',
-      arrivalTime: arrivalTime || '09:45 AM',
-      tokenNumber: tokenNumber || `T-${Math.floor(100 + Math.random() * 900)}`,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    memAppointments.unshift(doc);
-    res.status(201).json(doc);
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('appointment:new', responseDoc);
+    }
+
+    return res.status(201).json(responseDoc);
   } catch (err) {
     console.error('Error creating appointment:', err);
     res.status(500).json({ error: 'Failed to create appointment' });
@@ -74,6 +82,7 @@ router.put('/:id/status', async (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
+    let updatedDoc = null;
     if (isMongoConnected()) {
       const updated = await Appointment.findByIdAndUpdate(
         req.params.id,
@@ -83,17 +92,24 @@ router.put('/:id/status', async (req, res) => {
       if (!updated) {
         return res.status(404).json({ error: 'Appointment not found' });
       }
-      return res.json(updated);
+      updatedDoc = updated;
+    } else {
+      // Fallback: in-memory store
+      const item = memAppointments.find(a => a._id === req.params.id);
+      if (!item) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+      item.status = status;
+      item.updatedAt = new Date();
+      updatedDoc = item;
     }
 
-    // Fallback: in-memory store
-    const item = memAppointments.find(a => a._id === req.params.id);
-    if (!item) {
-      return res.status(404).json({ error: 'Appointment not found' });
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('appointment:updated', updatedDoc);
     }
-    item.status = status;
-    item.updatedAt = new Date();
-    res.json(item);
+
+    return res.json(updatedDoc);
   } catch (err) {
     console.error('Error updating appointment:', err);
     res.status(500).json({ error: 'Failed to update appointment' });
