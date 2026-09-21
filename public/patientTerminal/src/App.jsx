@@ -34,6 +34,10 @@ function App() {
   const [mode, setMode] = useState("Tap");
   const [listening, setListening] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submissionData, setSubmissionData] = useState(null);
   const [documentName, setDocumentName] = useState("");
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrError, setOcrError] = useState("");
@@ -376,6 +380,11 @@ function App() {
     setMode("Tap");
     setListening(false);
     setSubmitted(false);
+    setIsSubmitting(false);
+    setSubmitSuccess(false);
+    setSubmitError("");
+    setSubmissionData(null);
+    setReviewEditMode(false);
     setDocumentName("");
     setAltitudeMode("facility_config");
     setAltitudeMeters("2438");
@@ -399,6 +408,9 @@ function App() {
       alert(language === "हिन्दी" ? "स्टाफ़ ओवरराइड PIN आवश्यक है।" : "A staff override PIN is required.");
       return;
     }
+
+    setIsSubmitting(true);
+    setSubmitError("");
 
     const formData = {
       patientId: `PT-${Date.now().toString().slice(-4)}`,
@@ -455,7 +467,9 @@ function App() {
         throw new Error(result.error || "Failed to submit clinical intake record.");
       }
 
+      setSubmissionData(result.data || formData);
       setSubmitSuccess(true);
+      setSubmitted(true);
     } catch (err) {
       console.error("Submission failed:", err);
       setSubmitError(err.message || "Network error. Please inform hospital attendant.");
@@ -1483,12 +1497,104 @@ function App() {
 
         {/* STEP 8 */}
         {step === 8 && (
-          <section className="card">
-            <StepHeader
-              number="8"
-              title="Review your information"
-              subtitle="Check the details before sending them for clinical review."
-            />
+          submitSuccess ? (
+            <section className="card" style={{ textAlign: "center", padding: "40px 24px" }}>
+              <div style={{
+                width: "76px",
+                height: "76px",
+                borderRadius: "50%",
+                background: "#ecfdf5",
+                color: "#059669",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "40px",
+                margin: "0 auto 20px",
+                border: "3px solid #10b981",
+                boxShadow: "0 0 24px rgba(16, 185, 129, 0.2)"
+              }}>
+                ✓
+              </div>
+
+              <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#0f172a", marginBottom: "8px" }}>
+                {language === "हिन्दी" ? "क्लिनिकल समीक्षा हेतु प्रेषित!" : "Transmitted to Doctor Command Center"}
+              </h2>
+
+              <p style={{ color: "#64748b", fontSize: "14px", maxWidth: "540px", margin: "0 auto 24px" }}>
+                {language === "हिन्दी"
+                  ? "मरीज़ का डेटा, वाइटल्स और ट्राइएज रिपोर्ट डॉक्टर के डैशबोर्ड पर सफलतापूर्वक भेज दिए गए हैं।"
+                  : "Patient intake, vital telemetry, and triage scoring have been successfully broadcast to the physician queue."}
+              </p>
+
+              {/* Intake Summary Card */}
+              <div style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "14px",
+                padding: "20px",
+                maxWidth: "480px",
+                margin: "0 auto 24px",
+                textAlign: "left",
+                display: "grid",
+                gap: "12px"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                  <span style={{ color: "#64748b", fontWeight: "600" }}>Token / Patient ID:</span>
+                  <strong style={{ fontFamily: "monospace", color: "#0f766e", fontSize: "17px" }}>
+                    {submissionData?.patientId || "PT-QUEUE"}
+                  </strong>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                  <span style={{ color: "#64748b", fontWeight: "600" }}>Patient Name:</span>
+                  <strong>{submissionData?.name || patient.name || "Anonymous Patient"}</strong>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                  <span style={{ color: "#64748b", fontWeight: "600" }}>Triage Priority:</span>
+                  <span style={{
+                    fontWeight: "800",
+                    padding: "3px 12px",
+                    borderRadius: "20px",
+                    fontSize: "12px",
+                    background: (submissionData?.triageLevel === "EMERGENCY" || hasRedFlag) ? "#fef2f2" : "#f0fdf4",
+                    color: (submissionData?.triageLevel === "EMERGENCY" || hasRedFlag) ? "#dc2626" : "#16a34a",
+                    border: `1px solid ${(submissionData?.triageLevel === "EMERGENCY" || hasRedFlag) ? "#fca5a5" : "#86efac"}`
+                  }}>
+                    {submissionData?.triageLevel || (hasRedFlag ? "EMERGENCY" : "ROUTINE")}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#64748b", fontWeight: "600" }}>Queue Status:</span>
+                  <span style={{ color: "#059669", fontWeight: "700" }}>● Live in Doctor Queue</span>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "480px", margin: "0 auto" }}>
+                <button
+                  className="primary-btn"
+                  onClick={resetApp}
+                  style={{ width: "100%", padding: "14px", fontSize: "16px", fontWeight: "700" }}
+                >
+                  {language === "हिन्दी" ? "अगला मरीज़ / नया प्रारंभ करें" : "Next Patient / Start New Intake →"}
+                </button>
+                <button
+                  className="secondary-btn"
+                  onClick={() => window.location.href = '/'}
+                  style={{ width: "100%", padding: "12px", fontSize: "14px" }}
+                >
+                  {language === "हिन्दी" ? "मुख्य स्क्रीन पर वापस जाएं" : "Return to MediKiosk Home"}
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="card">
+              <StepHeader
+                number="8"
+                title="Review your information"
+                subtitle="Check the details before sending them for clinical review."
+              />
 
             {/* Top Micro-Adjustment action bar */}
             <div style={{
@@ -1688,13 +1794,26 @@ function App() {
               </div>
             )}
 
-            <button className="primary-btn" onClick={handleSubmit}>
-              Send for clinical review ✓
+            {submitError && (
+              <div className="alert-box" style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c", marginBottom: "16px" }}>
+                <strong>Submission Notice</strong>
+                <p>{submitError}</p>
+              </div>
+            )}
+
+            <button
+              className="primary-btn"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              style={{ opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+            >
+              {isSubmitting ? "Transmitting to Doctor Console..." : "Send for clinical review ✓"}
             </button>
             <p className="help-text">Decision-support MVP. Illustrative altitude profiles. Raw values preserved. Clinician sign-off required. Pilot validation needed.</p>
             <BackButton target={7} />
           </section>
-        )}
+        )
+      )}
       </main>
 
       {/* NOVA Voice Health Assistant Modal */}
