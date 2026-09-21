@@ -584,6 +584,25 @@ function App() {
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <a
+          href={`http://${window.location.hostname || 'localhost'}:4000/appointment.html`}
+          style={{
+            color: "#4f46e5",
+            textDecoration: "none",
+            fontSize: "13px",
+            fontWeight: "600",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "8px 14px",
+            borderRadius: "8px",
+            background: "#eef2ff",
+            border: "1px solid #c7d2fe",
+            transition: "all 0.2s ease"
+          }}
+        >
+          <span>📅 Book Appointment</span>
+        </a>
+        <a
           href={`http://${window.location.hostname || 'localhost'}:4000`}
           className="portal-exit-link"
           style={{

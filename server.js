@@ -50,7 +50,11 @@ const dashboardPath = path.join(__dirname, 'triage-engine', 'dashboard');
 app.use('/dashboard', express.static(dashboardPath));
 app.use('/triage/dashboard', express.static(dashboardPath));
 
-// Direct Kiosk HTML Shortcut Routes (with no-cache headers for tablets)
+// Direct HTML Shortcut Routes (with strict no-cache headers for instant updates)
+app.get(['/', '/index', '/index.html', '/landing', '/landingPage.html'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 app.get('/kiosk', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'kiosk.html'));
@@ -62,10 +66,6 @@ app.get(['/patient-terminal', '/terminal'], (req, res) => {
 app.get(['/home-patient', '/home-care', '/personal-device'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'homePatient.html'));
-});
-app.get(['/landing', '/landingPage.html'], (req, res) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  res.sendFile(path.join(__dirname, 'public', 'landingPage.html'));
 });
 app.get(['/appointment', '/appointments', '/appointment.html'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
