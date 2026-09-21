@@ -169,12 +169,12 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-            background: doorStatus === 'open' ? '#ecfdf5' : (doorStatus === 'moving' ? '#fffbeb' : '#f1f5f9'),
-            color: doorStatus === 'open' ? '#065f46' : (doorStatus === 'moving' ? '#b45309' : '#475569'),
-            border: `1px solid ${doorStatus === 'open' ? '#a7f3d0' : (doorStatus === 'moving' ? '#fde68a' : '#cbd5e1')}`
+            background: doorStatus === 'open' ? '#ecfdf5' : (doorStatus === 'moving' ? '#fffbeb' : (doorStatus === 'offline' ? '#fef2f2' : '#f1f5f9')),
+            color: doorStatus === 'open' ? '#065f46' : (doorStatus === 'moving' ? '#b45309' : (doorStatus === 'offline' ? '#b91c1c' : '#475569')),
+            border: `1px solid ${doorStatus === 'open' ? '#a7f3d0' : (doorStatus === 'moving' ? '#fde68a' : (doorStatus === 'offline' ? '#fecaca' : '#cbd5e1'))}`
           }}>
             <span>🚪</span>
-            <span>Door: {doorStatus === 'open' ? 'Open (180°)' : (doorStatus === 'moving' ? 'Moving...' : 'Closed (6°)')}</span>
+            <span>Door: {doorStatus === 'open' ? 'Open (180°)' : (doorStatus === 'moving' ? 'Moving...' : (doorStatus === 'offline' ? 'Offline (Standby)' : 'Closed (6°)'))}</span>
           </span>
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
           <button
             type="button"
             onClick={closeDoor}
-            disabled={doorStatus === 'closed'}
+            disabled={doorStatus === 'moving'}
             style={{
               padding: '6px 12px',
               background: '#047857',
@@ -212,8 +212,8 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
               borderRadius: 8,
               fontSize: 12,
               fontWeight: 700,
-              cursor: doorStatus === 'closed' ? 'default' : 'pointer',
-              opacity: doorStatus === 'closed' ? 0.6 : 1
+              cursor: doorStatus === 'moving' ? 'wait' : 'pointer',
+              opacity: doorStatus === 'moving' ? 0.6 : 1
             }}
           >
             {doorStatus === 'closed' ? 'Door Closed' : 'Close Door Now'}
@@ -228,34 +228,26 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         disabled={!canScan}
         style={{
           width: '100%',
-          padding: '15px 24px',
-          borderRadius: 10,
-          border: 'none',
-          cursor: canScan ? 'pointer' : 'not-allowed',
-          background: canScan ? '#168f91' : '#b0bec5',
+          padding: '14px 20px',
+          background: canScan ? '#126e70' : '#cbd5e1',
           color: '#ffffff',
-          fontWeight: 700,
+          border: 'none',
+          borderRadius: 12,
           fontSize: 15,
-          letterSpacing: '0.4px',
-          transition: 'all 0.2s ease',
+          fontWeight: 700,
+          cursor: canScan ? 'pointer' : 'not-allowed',
+          boxShadow: canScan ? '0 4px 12px rgba(18,110,112,0.25)' : 'none',
+          transition: 'all 0.2s',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 10,
-          boxShadow: canScan ? '0 4px 14px rgba(22, 143, 145, 0.25)' : 'none'
+          gap: 8
         }}
       >
         {scanning ? (
           <>
-            <span style={{
-              width: 16, height: 16,
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderTopColor: '#ffffff',
-              borderRadius: '50%',
-              display: 'inline-block',
-              animation: 'vs-spin 0.8s linear infinite'
-            }} />
-            Reading Measurement…
+            <span className="spinner" style={{ width: 16, height: 16, border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+            Capturing Diagnostic Reading...
           </>
         ) : (
           <>Get Vitals</>
@@ -268,7 +260,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         <button
           type="button"
           onClick={openDoor}
-          disabled={doorStatus === 'open' || doorStatus === 'moving'}
+          disabled={doorStatus === 'moving'}
           style={{
             background: '#ffffff',
             border: '1px solid #cbd5e1',
@@ -277,8 +269,8 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             fontSize: 12,
             color: '#334155',
             fontWeight: 600,
-            cursor: doorStatus === 'open' ? 'default' : 'pointer',
-            opacity: doorStatus === 'open' ? 0.6 : 1,
+            cursor: doorStatus === 'moving' ? 'wait' : 'pointer',
+            opacity: doorStatus === 'moving' ? 0.6 : 1,
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4
@@ -289,7 +281,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         <button
           type="button"
           onClick={closeDoor}
-          disabled={doorStatus === 'closed' || doorStatus === 'moving'}
+          disabled={doorStatus === 'moving'}
           style={{
             background: '#ffffff',
             border: '1px solid #cbd5e1',
@@ -298,8 +290,8 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
             fontSize: 12,
             color: '#334155',
             fontWeight: 600,
-            cursor: doorStatus === 'closed' ? 'default' : 'pointer',
-            opacity: doorStatus === 'closed' ? 0.6 : 1,
+            cursor: doorStatus === 'moving' ? 'wait' : 'pointer',
+            opacity: doorStatus === 'moving' ? 0.6 : 1,
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4

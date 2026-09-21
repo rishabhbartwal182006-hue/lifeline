@@ -212,70 +212,82 @@ router.post('/submit', handleKioskIngestion);
 const axios = require('axios');
 const getDoorControllerIP = () => process.env.DOOR_CONTROLLER_IP || '192.168.137.102';
 
-// In-memory virtual door state fallback (ensures Kiosk & Nova never freeze if hardware is offline)
-let virtualDoorState = { status: 'closed', angle: 6, hardwareOnline: false };
+let inFlightDoorPromise = null;
 
-router.post('/door/open', async (req, res) => {
+async function sendDoorCommand(req, endpoint) {
   const ip = getDoorControllerIP();
-  const io = req.app.get('io');
+  const io = (req && req.app && typeof req.app.get === 'function' && req.app.get('io')) || global.io;
+  const targetAngle = endpoint === 'open' ? 180 : 6;
+  const targetStatus = endpoint === 'open' ? 'open' : 'closed';
+
   try {
-    const espRes = await axios.get(`http://${ip}/door/open`, { timeout: 1500 });
-    virtualDoorState = { status: 'open', angle: 180, hardwareOnline: true };
-    if (io) io.emit('kiosk:door_state', { status: 'open', angle: 180, hardwareOnline: true });
-    return res.json({ success: true, online: true, status: 'open', angle: 180, ...espRes.data });
-  } catch (err) {
-    // Graceful Virtual Fallback
-    virtualDoorState = { status: 'open', angle: 180, hardwareOnline: false };
-    if (io) io.emit('kiosk:door_state', { status: 'open', angle: 180, hardwareOnline: false, simulated: true });
-    return res.json({
+    console.log(`[Door] Sending command to http://${ip}/door/${endpoint}...`);
+    const espRes = await axios.get(`http://${ip}/door/${endpoint}`, { timeout: 4000 });
+    if (io) io.emit('kiosk:door_state', { status: targetStatus, angle: targetAngle });
+    return {
       success: true,
       online: true,
-      status: 'open',
-      angle: 180,
-      simulated: true,
-      note: `Door opened (Virtual mode — hardware ESP32 unreachable at http://${ip})`
-    });
+      status: targetStatus,
+      angle: targetAngle,
+      ...espRes.data
+    };
+  } catch (err) {
+    console.warn(`[Door] Controller unreachable at http://${ip}: ${err.message}`);
+    if (io) io.emit('kiosk:door_state', { status: 'offline', angle: null });
+    return {
+      success: true,
+      online: false,
+      status: 'offline',
+      angle: null,
+      error: `Door controller unreachable at http://${ip}`
+    };
   }
+}
+
+router.post('/door/open', async (req, res) => {
+  if (inFlightDoorPromise) {
+    const result = await inFlightDoorPromise;
+    return res.json(result);
+  }
+  inFlightDoorPromise = sendDoorCommand(req, 'open').finally(() => { inFlightDoorPromise = null; });
+  const result = await inFlightDoorPromise;
+  return res.json(result);
 });
 
 router.post('/door/close', async (req, res) => {
-  const ip = getDoorControllerIP();
-  const io = req.app.get('io');
-  try {
-    const espRes = await axios.get(`http://${ip}/door/close`, { timeout: 1500 });
-    virtualDoorState = { status: 'closed', angle: 6, hardwareOnline: true };
-    if (io) io.emit('kiosk:door_state', { status: 'closed', angle: 6, hardwareOnline: true });
-    return res.json({ success: true, online: true, status: 'closed', angle: 6, ...espRes.data });
-  } catch (err) {
-    // Graceful Virtual Fallback
-    virtualDoorState = { status: 'closed', angle: 6, hardwareOnline: false };
-    if (io) io.emit('kiosk:door_state', { status: 'closed', angle: 6, hardwareOnline: false, simulated: true });
-    return res.json({
-      success: true,
-      online: true,
-      status: 'closed',
-      angle: 6,
-      simulated: true,
-      note: `Door closed (Virtual mode — hardware ESP32 unreachable at http://${ip})`
-    });
+  if (inFlightDoorPromise) {
+    const result = await inFlightDoorPromise;
+    return res.json(result);
   }
+  inFlightDoorPromise = sendDoorCommand(req, 'close').finally(() => { inFlightDoorPromise = null; });
+  const result = await inFlightDoorPromise;
+  return res.json(result);
 });
 
 router.get('/door/status', async (req, res) => {
   const ip = getDoorControllerIP();
   try {
-    const espRes = await axios.get(`http://${ip}/door/status`, { timeout: 1200 });
-    virtualDoorState = { status: espRes.data?.status || 'closed', angle: espRes.data?.angle || 6, hardwareOnline: true };
+    const espRes = await axios.get(`http://${ip}/door/status`, { timeout: 2000 });
     return res.json({ success: true, online: true, ...espRes.data });
   } catch (err) {
     return res.json({
       success: true,
-      online: true,
-      ...virtualDoorState,
-      simulated: true,
-      note: `Hardware offline at http://${ip}; serving active virtual state`
+      online: false,
+      status: 'offline',
+      angle: null,
+      error: `Door controller unreachable at http://${ip}`
     });
   }
+});
+
+router.post('/door/config', (req, res) => {
+  const { ip } = req.body || {};
+  if (ip && typeof ip === 'string') {
+    process.env.DOOR_CONTROLLER_IP = ip.trim();
+    console.log(`[Door] Door controller IP reconfigured to: ${process.env.DOOR_CONTROLLER_IP}`);
+    return res.json({ success: true, ip: process.env.DOOR_CONTROLLER_IP });
+  }
+  return res.status(400).json({ success: false, error: 'Valid IP string is required' });
 });
 
 module.exports = router;
