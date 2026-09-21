@@ -20,6 +20,7 @@ const hprAuthMiddleware = require('./middleware/hprAuth');
 const ocrRoutes = require('./routes/ocrRoutes');
 const medicationRoutes = require('./routes/medicationRoutes');
 const homeCareRoutes = require('./routes/homeCareRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 const { evaluateMultiSystemTriage } = require('./services/redFlagRules');
 
 const app = express();
@@ -66,6 +67,13 @@ app.get(['/landing', '/landingPage.html'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(__dirname, 'public', 'landingPage.html'));
 });
+app.get(['/appointment', '/appointments', '/appointment.html'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.sendFile(path.join(__dirname, 'public', 'appointment.html'));
+});
+app.get('/doctor-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'triage-engine', 'dashboard', 'index.html'));
+});
 
 // LifeLine 360 — Home Care & Remote Patient Monitoring (RPM)
 app.use('/api/v1/patient', medicationRoutes.router);
@@ -74,6 +82,7 @@ app.use('/api/v1/homecare', homeCareRoutes.router);
 app.use('/api/v1', homeCareRoutes.router);
 
 // API Base Routes Mounting
+app.use('/api/appointments', appointmentRoutes);
 app.use('/api/v1/kiosk', kioskRoutes);
 app.use('/api/v1/clinical', clinicalRoutes);
 app.use('/api/v1/hpr', hprRoutes);

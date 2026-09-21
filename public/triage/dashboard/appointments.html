@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>MediKiosk — Doctor Command Center</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/dashboard/styles.css" />
+
+  <style>
+    /* =========================================================
+       APPOINTMENTS MODULE — additive styles, scoped to the
+       `ap-` prefix so they layer on top of styles.css without
+       touching the rest of the dashboard's design system.
+       Medical green/white accent per spec: #10b981 / #a7f3d0.
+    ========================================================== */
+    :root {
+      --ap-primary: #10b981;
+      --ap-primary-dark: #059669;
+      --ap-border: #a7f3d0;
+      --ap-amber: #f59e0b;
+      --ap-amber-bg: #fffbeb;
+      --ap-red: #ef4444;
+      --ap-red-bg: #fef2f2;
+      --ap-green-bg: #ecfdf5;
+    }
+
+    #appointment-management-section { animation: ap-fade-in 0.35s ease; }
+    @keyframes ap-fade-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ap-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.01em; line-height: 1.4; white-space: nowrap;
+    }
+    .ap-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .ap-badge--pending { background: var(--ap-amber-bg); color: var(--ap-amber); border: 1px solid #fde68a; }
+    .ap-badge--approved { background: var(--ap-green-bg); color: var(--ap-primary-dark); border: 1px solid var(--ap-border); }
+    .ap-badge--rejected { background: var(--ap-red-bg); color: var(--ap-red); border: 1px solid #fecaca; }
+
+    .ap-filters { display: flex; gap: 8px; margin: 0 34px 16px; flex-wrap: wrap; }
+    .ap-filter-chip {
+      border: 1px solid var(--ap-border); background: #fff; color: #047857;
+      padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
+    }
+    .ap-filter-chip.is-active { background: var(--ap-primary); color: #fff; border-color: var(--ap-primary); }
+    .ap-filter-chip:hover:not(.is-active) { background: var(--ap-green-bg); }
+
+    .ap-table-card {
+      background: #fff; border: 1px solid var(--ap-border); border-radius: 12px;
+      overflow: hidden; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.06);
+    }
+    .ap-table-card thead tr { background: #f0fdf9 !important; border-bottom: 1px solid var(--ap-border) !important; color: #047857 !important; }
+    .ap-table-card tbody tr:hover { background: #f8fffc; }
+    .ap-empty-state {
+      color: #64748b; font-size: 15px; background: #fff; padding: 32px 20px;
+      border-radius: 12px; border: 1px dashed var(--ap-border); text-align: center;
+    }
+
+    .ap-action-btn { transition: opacity 0.15s ease, transform 0.1s ease; }
+    .ap-action-btn:active { transform: scale(0.97); }
+    .ap-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ---- notification toasts: glassmorphism, slide-in ---- */
+    #ap-toast-stack {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; max-width: 360px;
+    }
+    .ap-toast {
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      border: 1px solid var(--ap-border);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(0,0,0,0.04);
+      animation: ap-toast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .ap-toast.is-leaving { animation: ap-toast-out 0.25s ease forwards; }
+    @keyframes ap-toast-in { from { opacity: 0; transform: translateX(24px) scale(0.97); } to { opacity: 1; transform: translateX(0) scale(1); } }
+    @keyframes ap-toast-out { to { opacity: 0; transform: translateX(24px) scale(0.97); } }
+    .ap-toast-dot {
+      flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; margin-top: 5px;
+      background: var(--ap-primary); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    }
+    .ap-toast--pending .ap-toast-dot { background: var(--ap-amber); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15); }
+    .ap-toast--rejected .ap-toast-dot { background: var(--ap-red); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+    .ap-toast-body { flex: 1; }
+    .ap-toast-title { font-weight: 700; font-size: 13.5px; color: #0f172a; }
+    .ap-toast-msg { font-size: 12.5px; color: #475569; margin-top: 2px; line-height: 1.4; }
+    .ap-toast-close { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 15px; line-height: 1; padding: 2px; }
+    .ap-toast-close:hover { color: #64748b; }
+
+    /* ---- Home Care Station nav card: hover-lift ---- */
+    #nav-remote-btn { transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; }
+    #nav-remote-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 22px rgba(13, 148, 136, 0.18);
+      background: rgba(13, 148, 136, 0.14) !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="ap-toast-stack" aria-live="polite"></div>
+
+  <!-- =========================================================
+       APP SHELL
+  ========================================================== -->
+
+  <div class="app-shell">
+
+    <!-- =======================================================
+         SIDEBAR
+    ======================================================== -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-brand">
+        <div class="brand-mark">+</div>
+
+        <div class="brand-copy">
+          <strong>MediKiosk</strong>
+          <span>DOCTOR COMMAND CENTER</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+
+        <button
+          class="nav-item active"
+          data-nav="queue"
+          type="button"
+          onclick="window.location.href='index.html'"
+        >
+          <span class="nav-icon">▣</span>
+          <span class="nav-label">Live Queue</span>
+          <span class="nav-count" id="nav-queue-count">0</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-nav="emergency"
+          type="button"
+          onclick="window.location.href='index.html'"
+        >
+          <span class="nav-icon">△</span>
+          <span class="nav-label">Critical Alerts</span>
+          <span
+            class="nav-count nav-count-danger"
+            id="nav-emergency-count"
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-nav="audit"
+          type="button"
+          onclick="window.location.href='index.html'"
+        >
+          <span class="nav-icon">▤</span>
+          <span class="nav-label">Audit Trail</span>
+        </button>
+
+        <!--
+          FIX: this used to open a separate, now-deleted
+          `doctor-dashboard.html` in a new tab. The appointment
+          management table lives inline on this page inside
+          #appointment-management-section, so this button just
+          scrolls there — no navigation, no dependency on a page
+          that no longer exists.
+        -->
+        <button
+          class="nav-item"
+          id="nav-appointments-btn"
+          type="button"
+          onclick="document.getElementById('appointment-management-section').scrollIntoView({behavior:'smooth'})"
+          style="border: 1px solid rgba(59, 130, 246, 0.4); margin-top: 12px; background: rgba(59, 130, 246, 0.1);"
+        >
+          <span class="nav-icon" style="color: #3b82f6;">📅</span>
+          <span class="nav-label" style="color: #3b82f6; font-weight: 600;">Appointments</span>
+          <span class="nav-count" id="nav-appointments-count" style="background:#ef4444;color:#fff;">0</span>
+        </button>
+
+        <button
+          class="nav-item"
+          id="nav-remote-btn"
+          type="button"
+          onclick="window.open('/home-patient', '_blank')"
+          style="border: 1px solid rgba(13, 148, 136, 0.4); margin-top: 12px; background: rgba(13, 148, 136, 0.1);"
+        >
+          <span class="nav-icon" style="color: #0d9488;">⌂</span>
+          <span class="nav-label" style="color: #0d9488; font-weight: 600;">Home Care Station</span>
+          <span class="nav-count" style="background:#0d9488;color:#fff;">Node 2</span>
+        </button>
+        <script>
+          setInterval(async () => {
+            try {
+              const res = await fetch('/api/appointments/doctor');
+              const data = await res.json();
+              const pendingCount = data.filter(d => d.status === 'pending').length;
+              const badge = document.getElementById('nav-appointments-count');
+              badge.textContent = pendingCount;
+              badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+            } catch(e) {}
+          }, 3000);
+        </script>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="connection-state">
+          <span class="connection-dot" id="connection-dot"></span>
+
+          <div>
+            <strong id="connection-label">
+              Connecting
+            </strong>
+
+            <span>
+              Real-time triage stream
+            </span>
+          </div>
+        </div>
+
+        <div class="sidebar-tech">
+          Socket.IO · HPR Lock · SOAP
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <main class="main" style="padding: 30px;">
+      <header class="command-topbar">
+        <div class="command-left">
+          <div class="breadcrumb">
+            <span>Clinical Operations</span>
+            <b>›</b>
+            <strong>Appointments</strong>
+          </div>
+        </div>
+        <div class="doctor-tools">
+          <div class="doctor-profile">
+            <div class="doctor-avatar">RS</div>
+            <div class="doctor-profile-copy">
+              <strong>Dr. Rajesh Sharma</strong>
+              <span>Clinical Review</span>
+            </div>
+            <span class="doctor-chevron">⌄</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- =====================================================
+           APPOINTMENT MANAGEMENT — embedded inline, no separate page
+      ====================================================== -->
+      <section id="appointment-management-section">
+
+        <section class="page-header" style="margin-bottom: 6px;">
+          <div>
+            <h1 id="greeting">Appointment Requests</h1>
+            <p>Review incoming appointment requests and issue tokens.</p>
+          </div>
+          <div class="page-actions">
+            <button class="button secondary" type="button" onclick="fetchAppointments()">↻ Refresh</button>
+          </div>
+        </section>
+
+        <div class="ap-filters" role="tablist" aria-label="Filter appointments by status">
+          <button class="ap-filter-chip is-active" data-filter="pending" type="button">Pending</button>
+          <button class="ap-filter-chip" data-filter="approved" type="button">Approved</button>
+          <button class="ap-filter-chip" data-filter="rejected" type="button">Rejected</button>
+          <button class="ap-filter-chip" data-filter="all" type="button">All</button>
+        </div>
+
+        <div id="appointmentsList" style="margin: 0 34px 30px;"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.querySelector('.nav-item.active').classList.remove('active');
+    document.getElementById('nav-appointments-btn').classList.add('active');
+
+    // =========================================================
+    // STATE
+    // =========================================================
+    let ALL_APPOINTMENTS = [];
+    let ACTIVE_FILTER = 'pending';
+    let KNOWN_PENDING_IDS = new Set();
+    let FIRST_LOAD = true;
+
+    // =========================================================
+    // TOASTS — glassmorphism notification cards, slide-in
+    // =========================================================
+    function showToast({ title, message, kind = 'approved' }) {
+      const stack = document.getElementById('ap-toast-stack');
+      const el = document.createElement('div');
+      el.className = `ap-toast ap-toast--${kind}`;
+      el.innerHTML = `
+        <span class="ap-toast-dot"></span>
+        <div class="ap-toast-body">
+          <div class="ap-toast-title"></div>
+          <div class="ap-toast-msg"></div>
+        </div>
+        <button class="ap-toast-close" aria-label="Dismiss">×</button>
+      `;
+      el.querySelector('.ap-toast-title').textContent = title;
+      el.querySelector('.ap-toast-msg').textContent = message;
+      const remove = () => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 250); };
+      el.querySelector('.ap-toast-close').addEventListener('click', remove);
+      stack.appendChild(el);
+      setTimeout(remove, 6000);
+    }
+
+    // =========================================================
+    // FILTER CHIPS
+    // =========================================================
+    document.querySelectorAll('.ap-filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.ap-filter-chip').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        ACTIVE_FILTER = chip.dataset.filter;
+        renderAppointments();
+      });
+    });
+
+    function statusBadge(status) {
+      const map = {
+        pending: ['ap-badge--pending', 'Pending'],
+        approved: ['ap-badge--approved', 'Approved'],
+        rejected: ['ap-badge--rejected', 'Rejected'],
+      };
+      const [cls, label] = map[status] || map.pending;
+      return `<span class="ap-badge ${cls}">${label}</span>`;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+
+    // =========================================================
+    // FETCH — pulls every submitted appointment request
+    // (pending, approved and rejected), not just pending ones.
+    // =========================================================
+    async function fetchAppointments() {
+      try {
+        const res = await fetch('/api/appointments/doctor');
+        const appointments = await res.json();
+
+        // Detect newly-arrived pending requests since the last poll,
+        // so the doctor gets a live notification the moment a patient
+        // books from the home terminal.
+        if (!FIRST_LOAD) {
+          appointments.forEach(app => {
+            if (!KNOWN_PENDING_IDS.has(app._id) && app.status === 'pending') {
+              showToast({
+                title: 'New appointment request',
+                message: `${app.patientName} · ${app.department} · ${app.requestedTime}`,
+                kind: 'pending',
+              });
+            }
+          });
+        }
+        KNOWN_PENDING_IDS = new Set(appointments.filter(a => a.status === 'pending').map(a => a._id));
+        FIRST_LOAD = false;
+
+        ALL_APPOINTMENTS = appointments;
+        renderAppointments();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderAppointments() {
+      const list = document.getElementById('appointmentsList');
+
+      const pendingCount = ALL_APPOINTMENTS.filter(a => a.status === 'pending').length;
+      const badge = document.getElementById('nav-appointments-count');
+      badge.textContent = pendingCount;
+      badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+
+      const filtered = ACTIVE_FILTER === 'all'
+        ? ALL_APPOINTMENTS
+        : ALL_APPOINTMENTS.filter(a => a.status === ACTIVE_FILTER);
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="ap-empty-state">No ${ACTIVE_FILTER === 'all' ? '' : ACTIVE_FILTER + ' '}appointment requests.</p>`;
+        return;
+      }
+
+      let tableHTML = `
+        <div class="ap-table-card">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead>
+              <tr style="font-weight: 600; text-transform: uppercase; font-size: 12px;">
+                <th style="padding: 16px;">Patient Details</th>
+                <th style="padding: 16px;">Time & Dept</th>
+                <th style="padding: 16px;">Disease / Symptoms</th>
+                <th style="padding: 16px;">Token No.</th>
+                <th style="padding: 16px;">Status</th>
+                <th style="padding: 16px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      filtered.forEach(app => {
+        const isPending = app.status === 'pending';
+        tableHTML += `
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 16px;">
+              <div style="font-weight: 600; color: #1e293b; font-size: 15px;">${escapeHtml(app.patientName)}</div>
+              <div style="color: #64748b; font-size: 13px; margin-top: 4px;">${escapeHtml(String(app.age))} yrs • ${escapeHtml(app.gender)}</div>
+            </td>
+            <td style="padding: 16px;">
+              <div style="color: #1e293b; font-weight: 500;">${escapeHtml(app.requestedTime)}</div>
+              <div style="color: #64748b; font-size: 13px; margin-top: 4px;">${escapeHtml(app.requestedDate)}</div>
+              <div style="color: #3b82f6; font-size: 12px; margin-top: 4px; font-weight: 600;">${escapeHtml(app.department)}</div>
+            </td>
+            <td style="padding: 16px; color: #334155; max-width: 250px; line-height: 1.4;">
+              ${app.symptoms ? escapeHtml(app.symptoms) : '<span style="color: #94a3b8; font-style: italic;">None reported</span>'}
+            </td>
+            <td style="padding: 16px;">
+              <span style="background: #f1f5f9; padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 15px; font-weight: 700; color: #0f172a; border: 1px solid #e2e8f0;">
+                ${escapeHtml(app.tokenNumber)}
+              </span>
+            </td>
+            <td style="padding: 16px;">${statusBadge(app.status)}</td>
+            <td style="padding: 16px; text-align: center;">
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ap-action-btn" ${isPending ? '' : 'disabled'} onclick="updateStatus('${app._id}', 'approved', this)" style="background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">Approve</button>
+                <button class="ap-action-btn" ${isPending ? '' : 'disabled'} onclick="updateStatus('${app._id}', 'rejected', this)" style="background: #fff; color: #ef4444; border: 1px solid #ef4444; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">Reject</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `</tbody></table></div>`;
+      list.innerHTML = tableHTML;
+    }
+
+    // =========================================================
+    // UPDATE STATUS — instant, optimistic UI update (no page
+    // reload), then confirmed against the backend. Rolls back
+    // on failure. The endpoint URL below was previously broken
+    // (escaped backticks meant `${id}` was never interpolated);
+    // that's fixed here.
+    // =========================================================
+    async function updateStatus(id, status, btnEl) {
+      const row = ALL_APPOINTMENTS.find(a => a._id === id);
+      if (!row) return;
+
+      const previousStatus = row.status;
+      row.status = status; // optimistic update, reflected instantly
+      renderAppointments();
+      if (btnEl) btnEl.disabled = true;
+
+      try {
+        const res = await fetch(`/api/appointments/${id}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (!res.ok) throw new Error('Bad response: ' + res.status);
+
+        showToast({
+          title: status === 'approved' ? 'Appointment approved' : 'Appointment rejected',
+          message: `${row.patientName}'s request has been ${status}.`,
+          kind: status,
+        });
+      } catch (err) {
+        console.error(err);
+        row.status = previousStatus; // roll back on failure
+        renderAppointments();
+        showToast({
+          title: 'Failed to update status',
+          message: 'Please check your connection and try again.',
+          kind: 'rejected',
+        });
+      }
+    }
+
+    fetchAppointments();
+    setInterval(fetchAppointments, 5000);
+  </script>
+</body>
+</html>
