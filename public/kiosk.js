@@ -3,6 +3,14 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // Auto-close kiosk bay door on page load, refresh, or beforeunload
+  fetch('/api/v1/kiosk/door/close', { method: 'POST' }).catch(() => {});
+  window.addEventListener('beforeunload', () => {
+    try {
+      fetch('/api/v1/kiosk/door/close', { method: 'POST', keepalive: true }).catch(() => {});
+    } catch (_) {}
+  });
+
   // OCR Documents State
 const ocrDocuments = [];
 
