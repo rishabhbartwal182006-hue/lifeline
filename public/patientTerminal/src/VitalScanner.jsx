@@ -165,7 +165,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         {/* Live Badges */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <StatusBadge label="Scanner" online={scannerOnline} />
-          <StatusBadge label="Camera" online={esp32Online} />
+          <StatusBadge label="Optical Sensor" online={esp32Online} />
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,

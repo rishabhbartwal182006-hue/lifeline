@@ -627,7 +627,7 @@ function initNurseChatInteractions() {
   const responses = {
     triage: "Running multi-system triage rules: Vital signs and red flags determine Priority (Emergency, Urgent, or Routine).",
     chest: "Chest discomfort flagged: Screening for radiation, diaphoresis, and SpO2. Recommending immediate ECG triage review.",
-    home: "Syncing Node 2 (Home Care Hub): ESP32-CAM optical vitals & medication reminder compliance are up-to-date."
+    home: "Syncing Node 2 (Home Care Hub): Bio-optical vitals & medication reminder compliance are up-to-date."
   };
 
   actionPills.forEach((pill) => {
